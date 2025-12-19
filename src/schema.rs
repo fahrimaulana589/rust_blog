@@ -1,7 +1,7 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    count (id) {
+    counts (id) {
         id -> Nullable<Integer>,
         count -> Nullable<Integer>,
     }

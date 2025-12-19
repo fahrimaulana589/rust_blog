@@ -1,11 +1,16 @@
-use actix_web::{get, Responder};
+use crate::utils::di::Container;
+use actix_web::{Responder, get, web};
 
 #[get("/")]
-async fn index() -> impl Responder {
+pub async fn index() -> impl Responder {
     "Hello, world!"
 }
 
 #[get("/count")]
-async fn count() -> impl Responder {
-    "Count"
+pub async fn count(container: web::Data<Container>) -> impl Responder {
+    let count_val = container
+        .count_repository
+        .increment()
+        .expect("Error incrementing count");
+    format!("Count: {}", count_val)
 }

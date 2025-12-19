@@ -1,5 +1,5 @@
 -- Your SQL goes here
-create table count (
+create table counts (
     id integer primary key,
     count integer
 );

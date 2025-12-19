@@ -1,8 +1,9 @@
-mod config;
 mod app;
+mod config;
+mod schema;
 mod utils;
 
-use actix_web::{App, HttpServer};
+use actix_web::{App, HttpServer, web};
 use app::drivers::middlewares::state::State;
 
 #[actix_web::main]
@@ -13,7 +14,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
-            .app_data(state.container.clone())
+            .app_data(web::Data::new(state.container.clone()))
             .configure(app::drivers::routes::routes)
     })
     .bind(url)?
