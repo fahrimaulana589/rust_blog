@@ -1,17 +1,23 @@
-use actix_web::{get, App, HttpServer, Responder};
+mod config;
+mod app;
+mod utils;
 
-#[get("/")]
-async fn index() -> impl Responder {
-    "Hello, world!"
-}
+use actix_web::{App, HttpServer};
+use dotenv::dotenv;
+use config::Config;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    dotenv().ok();
+    let config = Config::new();
+
+    println!("server running on {}", config.url);
+
     HttpServer::new(|| {
         App::new()
-            .service(index)
+            .configure(app::drivers::routes::routes)
     })
-    .bind("127.0.0.1:8080")?
+    .bind(config.url)?
     .run()
     .await
 }
