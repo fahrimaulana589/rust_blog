@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 actix-web = "4"
 dotenv = "0.15.0"
+diesel = { version = "2.2.0", features = ["sqlite", "returning_clauses_for_sqlite_3_35"] }

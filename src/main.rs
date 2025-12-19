@@ -3,21 +3,20 @@ mod app;
 mod utils;
 
 use actix_web::{App, HttpServer};
-use dotenv::dotenv;
-use config::Config;
+use app::drivers::middlewares::state::State;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    dotenv().ok();
-    let config = Config::new();
+    let state = State::new();
+    let url = state.container.config.url.clone();
+    println!("server running on {}", url);
 
-    println!("server running on {}", config.url);
-
-    HttpServer::new(|| {
+    HttpServer::new(move || {
         App::new()
+            .app_data(state.container.clone())
             .configure(app::drivers::routes::routes)
     })
-    .bind(config.url)?
+    .bind(url)?
     .run()
     .await
 }
