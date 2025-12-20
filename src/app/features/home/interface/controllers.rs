@@ -1,4 +1,5 @@
 use crate::utils::di::Container;
+use crate::utils::success_response::map_success_response;
 use actix_web::{HttpResponse, Responder, get, web};
 
 #[get("/")]
@@ -12,14 +13,18 @@ pub async fn count(container: web::Data<Container>) -> impl Responder {
         .count_usecase
         .increment()
         .expect("Failed to increment count");
-    HttpResponse::Ok().json(result)
+    let response = map_success_response(result.to_string());
+    HttpResponse::Ok().json(response)
 }
 
 #[get("/send-email")]
 pub async fn send_email(container: web::Data<Container>) -> impl Responder {
     let result = container.send_email_usecase.send();
     match result {
-        Ok(message) => HttpResponse::Ok().json(message),
+        Ok(message) => {
+            let response = map_success_response(message);
+            HttpResponse::Ok().json(response)
+        }
         Err(e) => HttpResponse::InternalServerError().json(e),
     }
 }

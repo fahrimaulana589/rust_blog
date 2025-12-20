@@ -7,6 +7,7 @@ use validator::Validate;
 
 use crate::utils::di::Container;
 use crate::utils::error_response::{map_string_error, map_validation_error};
+use crate::utils::success_response::{map_success_response, map_success_with_data};
 
 #[post("/login")]
 async fn login(container: web::Data<Container>, body: web::Json<LoginRequestDto>) -> HttpResponse {
@@ -16,7 +17,10 @@ async fn login(container: web::Data<Container>, body: web::Json<LoginRequestDto>
                 .login_usecase
                 .execute(body.username.clone(), body.password.clone());
             match result {
-                Ok(result) => HttpResponse::Ok().json(result),
+                Ok(data) => {
+                    let response = map_success_with_data("Login successful".to_string(), data);
+                    HttpResponse::Ok().json(response)
+                }
                 Err(e) => {
                     let error_response = map_string_error(e);
                     HttpResponse::BadRequest().json(error_response)
@@ -41,7 +45,10 @@ async fn forgot_password(
                 .forgot_password_usecase
                 .execute(body.email.clone());
             match result {
-                Ok(result) => HttpResponse::Ok().json(result),
+                Ok(message) => {
+                    let response = map_success_response(message);
+                    HttpResponse::Ok().json(response)
+                }
                 Err(e) => {
                     let error_response = map_string_error(e);
                     HttpResponse::BadRequest().json(error_response)
@@ -66,7 +73,10 @@ async fn reset_password(
                 .reset_password_usecase
                 .execute(body.token.clone(), body.new_password.clone());
             match result {
-                Ok(result) => HttpResponse::Ok().json(result),
+                Ok(message) => {
+                    let response = map_success_response(message);
+                    HttpResponse::Ok().json(response)
+                }
                 Err(e) => {
                     let error_response = map_string_error(e);
                     HttpResponse::BadRequest().json(error_response)
