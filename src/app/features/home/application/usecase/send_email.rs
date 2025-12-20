@@ -1,31 +1,19 @@
-use lettre::{Message, SmtpTransport, Transport};
-use lettre::message::{header, Mailbox};
+use crate::utils::email::Email;
 
 #[derive(Clone)]
-pub struct Execute {}
+pub struct Execute {
+    pub email: Email,
+}
 
 impl Execute {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(email: Email) -> Self {
+        Self { email }
     }
 
-    pub fn send(&self) -> Result<(), String> {
-        let email = Message::builder()
-            .from(Mailbox::new(None, "no-reply@example.com".parse().unwrap()))
-            .to("user@test.com".parse().unwrap())
-            .subject("Email HTML")
-            .header(header::ContentType::TEXT_HTML)
-            .body(String::from(
-                "<h1>Hello</h1><p>Email HTML dari <b>Rust</b></p>",
-            ))
-            .unwrap();
-
-        let mailer = SmtpTransport::builder_dangerous("localhost")
-            .port(1025)
-            .build();
-
-        mailer.send(&email).unwrap();
-
-        Ok(())
+    pub fn send(&self) -> Result<String, String> {
+        match self.email.send_test_email() {
+            Ok(message) => Ok(message),
+            Err(e) => Err(e),
+        }
     }
 }

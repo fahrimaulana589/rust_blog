@@ -1,5 +1,5 @@
 use crate::utils::di::Container;
-use actix_web::{Responder, get, web, HttpResponse};
+use actix_web::{HttpResponse, Responder, get, web};
 
 #[get("/")]
 pub async fn index() -> impl Responder {
@@ -17,9 +17,9 @@ pub async fn count(container: web::Data<Container>) -> impl Responder {
 
 #[get("/send-email")]
 pub async fn send_email(container: web::Data<Container>) -> impl Responder {
-    let result = container
-        .send_email_usecase
-        .send()
-        .expect("Failed to send email");
-    HttpResponse::Ok().json(result)
+    let result = container.send_email_usecase.send();
+    match result {
+        Ok(message) => HttpResponse::Ok().json(message),
+        Err(e) => HttpResponse::InternalServerError().json(e),
+    }
 }

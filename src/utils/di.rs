@@ -8,6 +8,7 @@ use crate::app::features::home::infrastructure::repository_impl::CountRepository
 use crate::config::Config;
 use crate::utils::db::establish_connection;
 use std::sync::Arc;
+use crate::utils::email::Email;
 
 #[derive(Clone)]
 pub struct Container {
@@ -22,6 +23,7 @@ impl Container {
         let config = Config::new();
 
         let pool = establish_connection(&config.database_url);
+        let email = Email::new(config.clone());
 
         let count_repository: Arc<dyn CountRepository + Send + Sync> =
             Arc::new(CountRepositoryImpl::new(pool.clone()));
@@ -31,7 +33,7 @@ impl Container {
             Arc::new(UserRepositoryImpl::new(pool.clone()));
         let login_usecase = auth_usecase::login::Execute::new(user_repository,config.clone());
 
-        let send_email_usecase = home_usecase::send_email::Execute::new();
+        let send_email_usecase = home_usecase::send_email::Execute::new(email.clone());
 
         Self {
             config,
