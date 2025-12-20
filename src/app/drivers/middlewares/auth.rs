@@ -1,8 +1,8 @@
 use crate::utils::di::Container;
 use crate::utils::token::verify_token;
 use actix_web::{
-    Error, HttpMessage,
-    dev::{Service, ServiceRequest, ServiceResponse, Transform, forward_ready},
+    Error,
+    dev::{Service, ServiceRequest, ServiceResponse, Transform},
     web,
 };
 use futures_util::future::LocalBoxFuture;
@@ -55,9 +55,8 @@ where
             if auth_str.starts_with("Bearer ") {
                 let token = &auth_str[7..];
                 if let Some(container) = req.app_data::<web::Data<Container>>() {
-                    if let Ok(claims) = verify_token(token, &container.config.jwt_secret) {
+                    if let Ok(_) = verify_token(token, &container.config.jwt_secret) {
                         // Token is valid
-                        // req.extensions_mut().insert(claims); // Optionally inject claims
                         let fut = self.service.call(req);
                         return Box::pin(async move {
                             let res = fut.await?;

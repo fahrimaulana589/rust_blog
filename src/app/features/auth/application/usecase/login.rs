@@ -1,4 +1,3 @@
-use crate::app::features::auth::domain::entity::User;
 use crate::app::features::auth::domain::repository::UserRepository;
 use crate::app::features::auth::interface::dto::UserResponseDto;
 use crate::config::Config;

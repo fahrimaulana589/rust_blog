@@ -1,7 +1,4 @@
-use crate::app::features::auth::{
-    domain::entity::User,
-    interface::dto::{LoginRequestDto, UserResponseDto},
-};
+use crate::app::features::auth::interface::dto::{LoginRequestDto};
 use actix_web::{HttpResponse, post, web};
 
 use validator::Validate;
