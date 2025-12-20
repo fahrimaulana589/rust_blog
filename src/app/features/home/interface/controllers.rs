@@ -9,7 +9,7 @@ pub async fn index() -> impl Responder {
 #[get("/count")]
 pub async fn count(container: web::Data<Container>) -> impl Responder {
     let count_val = container
-        .count_repository
+        .count_usecase
         .increment()
         .expect("Error incrementing count");
     format!("Count: {}", count_val)

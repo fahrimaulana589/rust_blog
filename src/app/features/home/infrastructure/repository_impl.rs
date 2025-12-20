@@ -1,19 +1,23 @@
-use crate::app::features::home::models::Counts;
+use crate::app::features::home::domain::entity::Counts;
 use crate::schema::counts::dsl::*;
 use crate::utils::db::DbPool;
 use diesel::prelude::*;
 
+use crate::app::features::home::domain::repository::CountRepository;
+
 #[derive(Clone)]
-pub struct CountRepository {
+pub struct CountRepositoryImpl {
     pool: DbPool,
 }
 
-impl CountRepository {
+impl CountRepositoryImpl {
     pub fn new(pool: DbPool) -> Self {
         Self { pool }
     }
+}
 
-    pub fn get(&self) -> QueryResult<Option<Counts>> {
+impl CountRepository for CountRepositoryImpl {
+    fn get(&self) -> QueryResult<Option<Counts>> {
         let mut conn = self
             .pool
             .get()
@@ -28,7 +32,7 @@ impl CountRepository {
         }
     }
 
-    pub fn increment(&self) -> QueryResult<i32> {
+    fn increment(&self) -> QueryResult<i32> {
         let mut conn = self
             .pool
             .get()
