@@ -12,8 +12,9 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub struct Container {
     pub config: Config,
-    pub home_usecase: home_usecase::count::Execute,
+    pub count_usecase: home_usecase::count::Execute,
     pub login_usecase: auth_usecase::login::Execute,
+    pub send_email_usecase: home_usecase::send_email::Execute,
 }
 
 impl Container {
@@ -30,11 +31,13 @@ impl Container {
             Arc::new(UserRepositoryImpl::new(pool.clone()));
         let login_usecase = auth_usecase::login::Execute::new(user_repository,config.clone());
 
+        let send_email_usecase = home_usecase::send_email::Execute::new();
+
         Self {
             config,
-            home_usecase: 
             count_usecase,
             login_usecase,
+            send_email_usecase,
         }
     }
 }

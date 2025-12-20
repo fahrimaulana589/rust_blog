@@ -9,8 +9,17 @@ pub async fn index() -> impl Responder {
 #[get("/count")]
 pub async fn count(container: web::Data<Container>) -> impl Responder {
     let result = container
-        .home_usecase
+        .count_usecase
         .increment()
         .expect("Failed to increment count");
+    HttpResponse::Ok().json(result)
+}
+
+#[get("/send-email")]
+pub async fn send_email(container: web::Data<Container>) -> impl Responder {
+    let result = container
+        .send_email_usecase
+        .send()
+        .expect("Failed to send email");
     HttpResponse::Ok().json(result)
 }

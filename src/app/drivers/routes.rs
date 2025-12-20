@@ -10,7 +10,8 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
     .service(
         web::scope("/app")
             .wrap(app::drivers::middlewares::auth::Auth)
-            .service(app::features::home::interface::controllers::count),
+            .service(app::features::home::interface::controllers::count)
+            .service(app::features::home::interface::controllers::send_email),
     )
     .service(app::features::auth::interface::controller::login)
     .default_service(web::get().to(|| async { 
