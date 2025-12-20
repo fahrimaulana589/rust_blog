@@ -17,6 +17,14 @@ pub struct ForgotPasswordRequestDto {
     pub email: String,
 }
 
+#[derive(Deserialize, Validate, Serialize)]
+pub struct ResetPasswordRequestDto {
+    #[validate(length(min = 1, message = "Token is required"))]
+    pub token: String,
+    #[validate(length(min = 1, message = "New password is required"))]
+    pub new_password: String,
+}
+
 #[derive(Serialize)]
 pub struct UserResponseDto {
     pub username: String,

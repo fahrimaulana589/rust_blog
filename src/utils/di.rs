@@ -17,6 +17,7 @@ pub struct Container {
     pub login_usecase: auth_usecase::login::Execute,
     pub send_email_usecase: home_usecase::send_email::Execute,
     pub forgot_password_usecase: auth_usecase::forgot_password::Execute,
+    pub reset_password_usecase: auth_usecase::reset_password::Execute,
 }
 
 impl Container {
@@ -38,6 +39,8 @@ impl Container {
         let send_email_usecase = home_usecase::send_email::Execute::new(email.clone());
         let forgot_password_usecase =
             auth_usecase::forgot_password::Execute::new(user_repository.clone(), email.clone());
+        let reset_password_usecase =
+            auth_usecase::reset_password::Execute::new(user_repository.clone(), config.clone());
 
         Self {
             config,
@@ -45,6 +48,7 @@ impl Container {
             login_usecase,
             send_email_usecase,
             forgot_password_usecase,
+            reset_password_usecase,
         }
     }
 }

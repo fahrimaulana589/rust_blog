@@ -47,22 +47,15 @@ impl UserRepository for UserRepositoryImpl {
             Err(e) => Err(e),
         }
     }
-    fn _reset_password(&self, name: String, pass: String) -> QueryResult<User> {
-        // Note: This logic currently behaves like get_where but returns Result<User> instead of Option.
-        // It does not actually UPDATE the password. User requested "fix error", not "implement logic".
-        // I will keep logic similar to what user wrote but compile-safe.
+    fn reset_password(&self, name: String, pass: String) -> QueryResult<User> {
         let mut conn = self
             .pool
             .get()
             .expect("couldn't get db connection from pool");
-        let result = users
-            .filter(crate::schema::users::username.eq(name))
-            .filter(crate::schema::users::password.eq(pass))
-            .first::<User>(&mut conn);
-        match result {
-            Ok(c) => Ok(c),
-            Err(e) => Err(e),
-        }
+
+        diesel::update(users.filter(crate::schema::users::username.eq(name)))
+            .set(crate::schema::users::password.eq(pass))
+            .get_result(&mut conn)
     }
 
     fn create(&self, name: String, mail: String, pass: String) -> QueryResult<User> {

@@ -1,3 +1,4 @@
 // Application layer logic
-pub mod login;
 pub mod forgot_password;
+pub mod login;
+pub mod reset_password;

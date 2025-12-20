@@ -6,5 +6,5 @@ pub trait UserRepository {
     fn get_by_email(&self, email: String) -> QueryResult<Option<User>>;
     fn get_where(&self, username: String, password: String) -> QueryResult<Option<User>>;
     fn create(&self, username: String, email: String, password: String) -> QueryResult<User>;
-    fn _reset_password(&self, username: String, password: String) -> QueryResult<User>;
+    fn reset_password(&self, username: String, password: String) -> QueryResult<User>;
 }

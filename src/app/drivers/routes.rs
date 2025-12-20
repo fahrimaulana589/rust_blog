@@ -1,6 +1,6 @@
 use crate::app;
 use crate::utils::error_response::map_string_error;
-use actix_web::{web, HttpResponse};
+use actix_web::{HttpResponse, web};
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
     cfg.app_data(
@@ -15,8 +15,9 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
     )
     .service(app::features::auth::interface::controller::login)
     .service(app::features::auth::interface::controller::forgot_password)
-    .default_service(web::get().to(|| async { 
+    .service(app::features::auth::interface::controller::reset_password)
+    .default_service(web::get().to(|| async {
         let error_response = map_string_error("Not Found".to_string());
-        HttpResponse::NotFound().json(error_response) 
+        HttpResponse::NotFound().json(error_response)
     }));
 }
