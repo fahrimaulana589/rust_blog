@@ -1,4 +1,5 @@
 use crate::utils::di::Container;
+use crate::utils::error_response::map_string_error;
 use crate::utils::token::verify_token;
 use actix_web::{
     Error,
@@ -67,6 +68,13 @@ where
             }
         }
 
-        Box::pin(async move { Err(actix_web::error::ErrorUnauthorized("Unauthorized")) })
+        Box::pin(async move {
+            let error_response = map_string_error("Unauthorized".to_string());
+            Err(actix_web::error::InternalError::from_response(
+                "Unauthorized",
+                actix_web::HttpResponse::Unauthorized().json(error_response),
+            )
+            .into())
+        })
     }
 }

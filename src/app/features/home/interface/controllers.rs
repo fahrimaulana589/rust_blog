@@ -4,7 +4,8 @@ use actix_web::{HttpResponse, Responder, get, web};
 
 #[get("/")]
 pub async fn index() -> impl Responder {
-    "Hello, world!"
+    let response = map_success_response("Hello, world!".to_string());
+    HttpResponse::Ok().json(response)
 }
 
 #[get("/count")]
