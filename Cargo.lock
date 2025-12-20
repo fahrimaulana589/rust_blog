@@ -1214,6 +1214,7 @@ dependencies = [
  "lettre",
  "libsqlite3-sys",
  "serde",
+ "serde_json",
  "validator",
 ]
 

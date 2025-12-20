@@ -1,7 +1,7 @@
 use crate::config::Config;
+use crate::app::features::auth::domain::entity::User;
 use lettre::message::{Mailbox, header};
 use lettre::{Message, SmtpTransport, Transport};
-use lettre::transport::smtp::authentication::Credentials;
 
 
 #[derive(Clone)]
@@ -24,6 +24,19 @@ impl Email {
             .header(header::ContentType::TEXT_HTML)
             .body(String::from(
                 "<h1>Hello</h1><p>Email HTML dari <b>Rust</b></p>",
+            ))
+            .unwrap();
+        self.send_email(email)
+    }
+
+    pub fn send_email_to_user(&self, user: User, subject: String, body: String) -> Result<String, String> {
+        let email = Message::builder()
+            .from(Mailbox::new(None, self.config.smtp_from.parse().unwrap()))
+            .to(user.email.parse().unwrap())
+            .subject(subject)
+            .header(header::ContentType::TEXT_HTML)
+            .body(String::from(
+                body,
             ))
             .unwrap();
         self.send_email(email)

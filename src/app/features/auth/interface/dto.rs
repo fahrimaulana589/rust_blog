@@ -4,10 +4,17 @@ use validator::Validate;
 
 #[derive(Deserialize, Validate, Serialize)]
 pub struct LoginRequestDto {
-    #[validate(length(min = 1))]
+    #[validate(length(min = 1, message = "Username is required"))]
     pub username: String,
-    #[validate(length(min = 1))]
+    #[validate(length(min = 1, message = "Password is required"))]
     pub password: String,
+}
+
+#[derive(Deserialize, Validate, Serialize)]
+pub struct ForgotPasswordRequestDto {
+    #[validate(length(min = 1, message = "Email is required"))]
+    #[validate(email(message = "Email is invalid"))]
+    pub email: String,
 }
 
 #[derive(Serialize)]

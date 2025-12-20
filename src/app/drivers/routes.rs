@@ -14,6 +14,7 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
             .service(app::features::home::interface::controllers::send_email),
     )
     .service(app::features::auth::interface::controller::login)
+    .service(app::features::auth::interface::controller::forgot_password)
     .default_service(web::get().to(|| async { 
         let error_response = map_string_error("Not Found".to_string());
         HttpResponse::NotFound().json(error_response) 

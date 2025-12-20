@@ -7,8 +7,8 @@ use crate::app::features::home::domain::repository::CountRepository;
 use crate::app::features::home::infrastructure::repository_impl::CountRepositoryImpl;
 use crate::config::Config;
 use crate::utils::db::establish_connection;
-use std::sync::Arc;
 use crate::utils::email::Email;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Container {
@@ -16,6 +16,7 @@ pub struct Container {
     pub count_usecase: home_usecase::count::Execute,
     pub login_usecase: auth_usecase::login::Execute,
     pub send_email_usecase: home_usecase::send_email::Execute,
+    pub forgot_password_usecase: auth_usecase::forgot_password::Execute,
 }
 
 impl Container {
@@ -31,15 +32,19 @@ impl Container {
 
         let user_repository: Arc<dyn UserRepository + Send + Sync> =
             Arc::new(UserRepositoryImpl::new(pool.clone()));
-        let login_usecase = auth_usecase::login::Execute::new(user_repository,config.clone());
+        let login_usecase =
+            auth_usecase::login::Execute::new(user_repository.clone(), config.clone());
 
         let send_email_usecase = home_usecase::send_email::Execute::new(email.clone());
+        let forgot_password_usecase =
+            auth_usecase::forgot_password::Execute::new(user_repository.clone(), email.clone());
 
         Self {
             config,
             count_usecase,
             login_usecase,
             send_email_usecase,
+            forgot_password_usecase,
         }
     }
 }

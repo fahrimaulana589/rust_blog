@@ -83,4 +83,19 @@ impl UserRepository for UserRepositoryImpl {
             .values(&new_user)
             .get_result(&mut conn)
     }
+
+    fn get_by_email(&self, mail: String) -> QueryResult<Option<User>> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        let result = users
+            .filter(crate::schema::users::email.eq(mail))
+            .first::<User>(&mut conn);
+        match result {
+            Ok(c) => Ok(Some(c)),
+            Err(diesel::result::Error::NotFound) => Ok(None),
+            Err(e) => Err(e),
+        }
+    }
 }
