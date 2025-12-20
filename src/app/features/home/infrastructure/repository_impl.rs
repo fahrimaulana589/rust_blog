@@ -2,7 +2,7 @@ use crate::app::features::home::domain::entity::Counts;
 use crate::schema::counts::dsl::*;
 use crate::utils::db::DbPool;
 use diesel::prelude::*;
-
+use diesel::result::QueryResult;
 use crate::app::features::home::domain::repository::CountRepository;
 
 #[derive(Clone)]
