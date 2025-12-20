@@ -13,11 +13,13 @@ use crate::utils::error_response::{map_string_error, map_validation_error};
 async fn login(container: web::Data<Container>, body: web::Json<LoginRequestDto>) -> HttpResponse {
     match body.validate() {
         Ok(_) => {
-            let user = container
+            let result = container
                 .login_usecase
                 .execute(body.username.clone(), body.password.clone());
-            match user {
-                Ok(user) => HttpResponse::Ok().json(UserResponseDto::from(user)),
+            match result {
+                Ok(result) => {
+                    HttpResponse::Ok().json(result)
+                }
                 Err(e) => {
                     let error_response = map_string_error(e);
                     HttpResponse::BadRequest().json(error_response)

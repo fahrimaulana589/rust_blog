@@ -64,4 +64,23 @@ impl UserRepository for UserRepositoryImpl {
             Err(e) => Err(e),
         }
     }
+
+    fn create(&self, name: String, mail: String, pass: String) -> QueryResult<User> {
+        use crate::app::features::auth::domain::entity::User;
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+
+        let new_user = User {
+            id: Some(1),
+            username: name,
+            email: mail,
+            password: pass,
+        };
+
+        diesel::insert_into(users)
+            .values(&new_user)
+            .get_result(&mut conn)
+    }
 }

@@ -2,9 +2,9 @@ use crate::app::features::auth::domain::repository::UserRepository;
 use crate::app::features::auth::infrastructure::repository_impl::UserRepositoryImpl;
 use crate::app::features::home::application::usecase as home_usecase;
 
+use crate::app::features::auth::application::usecase as auth_usecase;
 use crate::app::features::home::domain::repository::CountRepository;
 use crate::app::features::home::infrastructure::repository_impl::CountRepositoryImpl;
-use crate::app::features::auth::application::usecase as auth_usecase;
 use crate::config::Config;
 use crate::utils::db::establish_connection;
 use std::sync::Arc;
@@ -12,7 +12,7 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub struct Container {
     pub config: Config,
-    pub count_usecase: home_usecase::count::Execute,
+    pub home_usecase: home_usecase::count::Execute,
     pub login_usecase: auth_usecase::login::Execute,
 }
 
@@ -28,10 +28,11 @@ impl Container {
 
         let user_repository: Arc<dyn UserRepository + Send + Sync> =
             Arc::new(UserRepositoryImpl::new(pool.clone()));
-        let login_usecase = auth_usecase::login::Execute::new(user_repository);
+        let login_usecase = auth_usecase::login::Execute::new(user_repository,config.clone());
 
         Self {
             config,
+            home_usecase: 
             count_usecase,
             login_usecase,
         }

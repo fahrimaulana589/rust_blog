@@ -10,3 +10,6 @@ diesel = { version = "2.2.0", features = ["sqlite", "returning_clauses_for_sqlit
 libsqlite3-sys = { version = "0.26.0", features = ["bundled"] }
 serde = "1.0.228"
 validator = { version = "0.20.0", features = ["derive"] }
+jsonwebtoken = "9"
+chrono = { version = "0.4", features = ["serde"] }
+futures-util = "0.3"

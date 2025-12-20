@@ -14,13 +14,15 @@ pub struct LoginRequestDto {
 pub struct UserResponseDto {
     pub username: String,
     pub email: String,
+    pub token: String,
 }
 
-impl From<User> for UserResponseDto {
-    fn from(user: User) -> Self {
+impl UserResponseDto {
+    pub fn from(user: User, token: String) -> Self {
         Self {
             username: user.username,
             email: user.email,
+            token: token,
         }
     }
 }
