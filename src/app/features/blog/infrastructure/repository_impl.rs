@@ -1,0 +1,144 @@
+use crate::app::features::blog::domain::entity::{
+    Blog, BlogTags, Category, NewBlog, NewCategory, NewTag, Tag,
+};
+use crate::app::features::blog::domain::repository::BlogRepository;
+use crate::schema::{blog, blog_tags, categories, tags};
+use crate::utils::db::DbPool;
+use diesel::prelude::*;
+
+#[derive(Clone)]
+pub struct BlogRepositoryImpl {
+    pub pool: DbPool,
+}
+
+impl BlogRepository for BlogRepositoryImpl {
+    fn get_all_blog(&self) -> QueryResult<Vec<Blog>> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        blog::table.load::<Blog>(&mut conn)
+    }
+    fn get_blog_by_id(&self, id: i32) -> QueryResult<Option<Blog>> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        blog::table.find(id).first::<Blog>(&mut conn).optional()
+    }
+    fn create_blog(&self, blog: NewBlog) -> QueryResult<Blog> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        diesel::insert_into(blog::table)
+            .values(blog)
+            .get_result(&mut conn)
+    }
+    fn update_blog(&self, id: i32, blog: NewBlog) -> QueryResult<Blog> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        diesel::update(blog::table.find(id))
+            .set(blog)
+            .get_result(&mut conn)
+    }
+    fn delete_blog(&self, id: i32) -> QueryResult<usize> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        diesel::delete(blog::table.find(id)).execute(&mut conn)
+    }
+    fn get_all_tag(&self) -> QueryResult<Vec<Tag>> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        tags::table.load::<Tag>(&mut conn)
+    }
+    fn get_tag_by_id(&self, id: i32) -> QueryResult<Option<Tag>> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        tags::table.find(id).first::<Tag>(&mut conn).optional()
+    }
+    fn create_tag(&self, tag: NewTag) -> QueryResult<Tag> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        diesel::insert_into(tags::table)
+            .values(tag)
+            .get_result(&mut conn)
+    }
+    fn update_tag(&self, id: i32, tag: NewTag) -> QueryResult<Tag> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        diesel::update(tags::table.find(id))
+            .set(tag)
+            .get_result(&mut conn)
+    }
+    fn delete_tag(&self, id: i32) -> QueryResult<usize> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        diesel::delete(tags::table.find(id)).execute(&mut conn)
+    }
+    fn get_all_category(&self) -> QueryResult<Vec<Category>> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        categories::table.load::<Category>(&mut conn)
+    }
+    fn get_category_by_id(&self, id: i32) -> QueryResult<Option<Category>> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        categories::table
+            .find(id)
+            .first::<Category>(&mut conn)
+            .optional()
+    }
+    fn create_category(&self, category: NewCategory) -> QueryResult<Category> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        diesel::insert_into(categories::table)
+            .values(category)
+            .get_result(&mut conn)
+    }
+    fn update_category(&self, id: i32, category: NewCategory) -> QueryResult<Category> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        diesel::update(categories::table.find(id))
+            .set(category)
+            .get_result(&mut conn)
+    }
+    fn delete_category(&self, id: i32) -> QueryResult<usize> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        diesel::delete(categories::table.find(id)).execute(&mut conn)
+    }
+    fn create_blog_tags(&self, blog_tags: BlogTags) -> QueryResult<BlogTags> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        diesel::insert_into(blog_tags::table)
+            .values(blog_tags)
+            .get_result(&mut conn)
+    }
+}
