@@ -270,9 +270,9 @@ async fn test_update_blog() {
 
     // Update
     let update_dto = UpdateBlogRequestDto {
-        title: "Updated Title".to_string(),
-        content: "Updated Content".to_string(),
-        category_id: cat_id,
+        title: Some("Updated Title".to_string()),
+        content: Some("Updated Content".to_string()),
+        category_id: Some(cat_id),
         tag_ids: None,
         excerpt: None,
         thumbnail: None,
@@ -366,4 +366,124 @@ async fn test_delete_blog() {
         .to_request();
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success());
+}
+
+#[actix_web::test]
+#[serial]
+async fn test_partial_update_blog() {
+    let container = Container::new();
+    seed_user(&container);
+    let app = init_test_app!(&container);
+    let token = login_admin(&app, &container).await;
+
+    // Setup Data (Category)
+    let category_dto = CreateCategoryRequestDto {
+        name: format!("Part Upd Cat {}", Utc::now().timestamp_micros()),
+    };
+    let req = test::TestRequest::post()
+        .uri("/app/categories")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&category_dto)
+        .to_request();
+    test::call_service(&app, req).await;
+    let req = test::TestRequest::get()
+        .uri("/app/categories?per_page=1000")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .to_request();
+    let resp: SuccessResponse<
+        crate::app::features::blog::interface::dto::PaginatedResponseDto<
+            crate::app::features::blog::interface::dto::CategoryResponseDto,
+        >,
+    > = test::call_and_read_body_json(&app, req).await;
+    let cat_id = resp.data.unwrap().items.last().unwrap().id;
+
+    // Create Blog
+    let unique_title = format!("Test Partial Update {}", Utc::now().timestamp_micros());
+    let create_dto = CreateBlogRequestDto {
+        title: unique_title.clone(),
+        content: "Original Content".to_string(),
+        category_id: cat_id,
+        tag_ids: None,
+        excerpt: None,
+        thumbnail: None,
+        status: None,
+    };
+    let req = test::TestRequest::post()
+        .uri("/app/blogs")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&create_dto)
+        .to_request();
+    test::call_service(&app, req).await;
+
+    // Find Blog
+    let req = test::TestRequest::get()
+        .uri("/app/blogs?per_page=1000")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .to_request();
+    let resp: SuccessResponse<
+        crate::app::features::blog::interface::dto::PaginatedResponseDto<BlogResponseDto>,
+    > = test::call_and_read_body_json(&app, req).await;
+    let blog = resp
+        .data
+        .unwrap()
+        .items
+        .into_iter()
+        .find(|b| b.title == unique_title)
+        .unwrap();
+
+    // Partial Update: Change Title only
+    let update_title = "Partially Updated Title".to_string();
+    let update_dto = UpdateBlogRequestDto {
+        title: Some(update_title.clone()),
+        content: None,     // Should preserve "Original Content"
+        category_id: None, // Should preserve cat_id
+        tag_ids: None,
+        excerpt: None,
+        thumbnail: None,
+        status: None,
+    };
+    let req = test::TestRequest::put()
+        .uri(&format!("/app/blogs/{}", blog.id))
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&update_dto)
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success());
+
+    // Verify
+    let req = test::TestRequest::get()
+        .uri(&format!("/app/blogs/{}", blog.id))
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .to_request();
+    let resp: SuccessResponse<BlogResponseDto> = test::call_and_read_body_json(&app, req).await;
+    let data = resp.data.unwrap();
+    assert_eq!(data.title, update_title);
+    assert_eq!(data.content, "Original Content");
+}
+
+#[actix_web::test]
+#[serial]
+async fn test_update_blog_empty_title_validation() {
+    let container = Container::new();
+    seed_user(&container);
+    let app = init_test_app!(&container);
+    let token = login_admin(&app, &container).await;
+
+    // Attempt Update with empty title
+    let update_dto = UpdateBlogRequestDto {
+        title: Some("".to_string()), // Empty string
+        content: None,
+        category_id: None,
+        tag_ids: None,
+        excerpt: None,
+        thumbnail: None,
+        status: None,
+    };
+    let req = test::TestRequest::put()
+        .uri("/app/blogs/123") // ID doesn't matter for DTO validation
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&update_dto)
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert_eq!(resp.status(), actix_web::http::StatusCode::BAD_REQUEST);
 }

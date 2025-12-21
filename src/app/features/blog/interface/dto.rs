@@ -57,10 +57,10 @@ pub struct CreateBlogRequestDto {
 #[derive(Deserialize, Serialize, Validate)]
 pub struct UpdateBlogRequestDto {
     #[validate(length(min = 1, message = "Title is required"))]
-    pub title: String,
+    pub title: Option<String>,
     #[validate(length(min = 1, message = "Content is required"))]
-    pub content: String,
-    pub category_id: i32,
+    pub content: Option<String>,
+    pub category_id: Option<i32>,
     pub tag_ids: Option<Vec<i32>>,
     pub excerpt: Option<String>,
     pub thumbnail: Option<String>,

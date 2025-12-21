@@ -22,20 +22,22 @@ impl Execute {
             .ok_or_else(|| "Blog not found".to_string())?;
 
         // Validate Category
-        if self
-            .repository
-            .get_category_by_id(dto.category_id)
-            .map_err(|e| e.to_string())?
-            .is_none()
-        {
-            return Err("Category not found".to_string());
+        if let Some(cat_id) = dto.category_id {
+            if self
+                .repository
+                .get_category_by_id(cat_id)
+                .map_err(|e| e.to_string())?
+                .is_none()
+            {
+                return Err("Category not found".to_string());
+            }
         }
 
         // Update Blog (Merge DTO with existing)
         let new_blog = NewBlog {
-            title: dto.title,
-            content: dto.content,
-            category_id: dto.category_id,
+            title: dto.title.unwrap_or(existing_blog.title),
+            content: dto.content.unwrap_or(existing_blog.content),
+            category_id: dto.category_id.unwrap_or(existing_blog.category_id),
             slug: existing_blog.slug, // Preserve slug
             excerpt: dto.excerpt.or(existing_blog.excerpt),
             thumbnail: dto.thumbnail.or(existing_blog.thumbnail),
