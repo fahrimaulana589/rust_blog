@@ -11,6 +11,12 @@ pub struct BlogRepositoryImpl {
     pub pool: DbPool,
 }
 
+impl BlogRepositoryImpl {
+    pub fn new(pool: DbPool) -> Self {
+        Self { pool }
+    }
+}
+
 impl BlogRepository for BlogRepositoryImpl {
     fn get_all_blog(&self) -> QueryResult<Vec<Blog>> {
         let mut conn = self

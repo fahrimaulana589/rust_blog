@@ -11,7 +11,12 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
         web::scope("/app")
             .wrap(app::drivers::middlewares::auth::Auth)
             .service(app::features::home::interface::controllers::count)
-            .service(app::features::home::interface::controllers::send_email),
+            .service(app::features::home::interface::controllers::send_email)
+            .service(app::features::blog::interface::controller::create_category)
+            .service(app::features::blog::interface::controller::get_categories)
+            .service(app::features::blog::interface::controller::get_category)
+            .service(app::features::blog::interface::controller::update_category)
+            .service(app::features::blog::interface::controller::delete_category),
     )
     .service(app::features::auth::interface::controller::login)
     .service(app::features::auth::interface::controller::forgot_password)

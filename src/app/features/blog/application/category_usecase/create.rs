@@ -1,4 +1,6 @@
+use crate::app::features::blog::domain::entity::NewCategory;
 use crate::app::features::blog::domain::repository::BlogRepository;
+use crate::app::features::blog::interface::dto::CreateCategoryRequestDto;
 use std::sync::Arc;
 
 #[derive(Clone)]
@@ -11,9 +13,10 @@ impl Execute {
         Self { repository }
     }
 
-    pub async fn execute(&self, id: i32) -> Result<(), String> {
+    pub async fn execute(&self, dto: CreateCategoryRequestDto) -> Result<(), String> {
+        let new_category = NewCategory { name: dto.name };
         self.repository
-            .delete_category(id)
+            .create_category(new_category)
             .map_err(|e| e.to_string())?;
         Ok(())
     }

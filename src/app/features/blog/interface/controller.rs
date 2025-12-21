@@ -1,0 +1,98 @@
+use crate::app::features::blog::interface::dto::{
+    CreateCategoryRequestDto, UpdateCategoryRequestDto,
+};
+use crate::utils::di::Container;
+use crate::utils::error_response::{map_string_error, map_validation_error};
+use crate::utils::success_response::{map_success_response, map_success_with_data};
+use actix_web::{HttpResponse, Responder, delete, get, post, put, web};
+use validator::Validate;
+
+#[post("/categories")]
+pub async fn create_category(
+    container: web::Data<Container>,
+    payload: web::Json<CreateCategoryRequestDto>,
+) -> impl Responder {
+    if let Err(e) = payload.validate() {
+        return HttpResponse::BadRequest().json(map_validation_error(e));
+    }
+    match container
+        .create_category_usecase
+        .execute(payload.into_inner())
+        .await
+    {
+        Ok(_) => HttpResponse::Ok().json(map_success_response(
+            "Category created successfully".to_string(),
+        )),
+        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+    }
+}
+
+#[get("/categories")]
+pub async fn get_categories(container: web::Data<Container>) -> impl Responder {
+    match container.get_categories_usecase.execute().await {
+        Ok(categories) => HttpResponse::Ok().json(map_success_with_data(
+            "Categories fetched successfully".to_string(),
+            categories,
+        )),
+        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+    }
+}
+
+#[get("/categories/{id}")]
+pub async fn get_category(container: web::Data<Container>, id: web::Path<i32>) -> impl Responder {
+    match container
+        .get_category_usecase
+        .execute(id.into_inner())
+        .await
+    {
+        Ok(category) => HttpResponse::Ok().json(map_success_with_data(
+            "Category fetched successfully".to_string(),
+            category,
+        )),
+        Err(e) => {
+            if e.contains("not found") {
+                HttpResponse::NotFound().json(map_string_error(e))
+            } else {
+                HttpResponse::InternalServerError().json(map_string_error(e))
+            }
+        }
+    }
+}
+
+#[put("/categories/{id}")]
+pub async fn update_category(
+    container: web::Data<Container>,
+    id: web::Path<i32>,
+    payload: web::Json<UpdateCategoryRequestDto>,
+) -> impl Responder {
+    if let Err(e) = payload.validate() {
+        return HttpResponse::BadRequest().json(map_validation_error(e));
+    }
+    match container
+        .update_category_usecase
+        .execute(id.into_inner(), payload.into_inner())
+        .await
+    {
+        Ok(_) => HttpResponse::Ok().json(map_success_response(
+            "Category updated successfully".to_string(),
+        )),
+        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+    }
+}
+
+#[delete("/categories/{id}")]
+pub async fn delete_category(
+    container: web::Data<Container>,
+    id: web::Path<i32>,
+) -> impl Responder {
+    match container
+        .delete_category_usecase
+        .execute(id.into_inner())
+        .await
+    {
+        Ok(_) => HttpResponse::Ok().json(map_success_response(
+            "Category deleted successfully".to_string(),
+        )),
+        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+    }
+}

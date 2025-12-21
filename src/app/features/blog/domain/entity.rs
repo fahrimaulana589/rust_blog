@@ -5,16 +5,16 @@ use diesel::prelude::*;
 #[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name =categories)]
 pub struct Category {
-    id: i32,
-    name: String,
-    created_at: NaiveDateTime,
-    updated_at: NaiveDateTime,
+    pub id: i32,
+    pub name: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Insertable, AsChangeset)]
 #[diesel(table_name =categories)]
 pub struct NewCategory {
-    name: String,
+    pub name: String,
 }
 
 #[derive(Queryable, Selectable, Identifiable)]
