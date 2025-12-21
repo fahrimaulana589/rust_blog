@@ -142,7 +142,7 @@ async fn test_update_tag() {
 
     // Update
     let update_dto = UpdateTagRequestDto {
-        name: "Test Updated Tag Name".to_string(),
+        name: Some("Test Updated Tag Name".to_string()),
     };
     let req = test::TestRequest::put()
         .uri(&format!("/app/tags/{}", tag.id))

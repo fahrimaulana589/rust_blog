@@ -144,7 +144,7 @@ async fn test_update_category() {
 
     // Update
     let update_dto = UpdateCategoryRequestDto {
-        name: "Test Updated Name".to_string(),
+        name: Some("Test Updated Name".to_string()),
     };
     let req = test::TestRequest::put()
         .uri(&format!("/app/categories/{}", category.id))

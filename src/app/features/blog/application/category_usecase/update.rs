@@ -14,7 +14,15 @@ impl Execute {
     }
 
     pub async fn execute(&self, id: i32, dto: UpdateCategoryRequestDto) -> Result<(), String> {
-        let new_category = NewCategory { name: dto.name };
+        let existing = self
+            .repository
+            .get_category_by_id(id)
+            .map_err(|e| e.to_string())?
+            .ok_or_else(|| "Category not found".to_string())?;
+
+        let new_category = NewCategory {
+            name: dto.name.unwrap_or(existing.name),
+        };
         self.repository
             .update_category(id, new_category)
             .map_err(|e| e.to_string())?;

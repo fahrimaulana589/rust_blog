@@ -10,7 +10,7 @@ pub struct CreateCategoryRequestDto {
 #[derive(Deserialize, Serialize, Validate)]
 pub struct UpdateCategoryRequestDto {
     #[validate(length(min = 1, message = "Name is required"))]
-    pub name: String,
+    pub name: Option<String>,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -30,7 +30,7 @@ pub struct CreateTagRequestDto {
 #[derive(Deserialize, Serialize, Validate)]
 pub struct UpdateTagRequestDto {
     #[validate(length(min = 1, message = "Name is required"))]
-    pub name: String,
+    pub name: Option<String>,
 }
 
 #[derive(Deserialize, Serialize)]

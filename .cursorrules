@@ -40,6 +40,13 @@ src/
      - Request: Use `PaginationRequestDto`.
      - Response: Use `PaginatedResponseDto<T>` wrapping items and metadata (`meta`).
      - Repository: Must accept `limit` and `offset` and return `(items, total_count)`.
+   - **Update Operations (Partial Updates)**:
+     - **DTOs**: Use `Option<T>` for all updatable fields to support partial updates.
+     - **Semantics**:
+       - `None` (missing field/null): Preserve existing value.
+       - `Some(value)`: Update to new value.
+       - `Some("")` (empty string): Trigger validation error if field is required (e.g., `#[validate(length(min=1))]`).
+     - **Implementation**: In UseCase, merge existing entity with provided `Some` values: `dto.field.unwrap_or(existing.field)`.
 
 2. **Application Layer (`application/`)**
    - **Use Cases**: Contains business logic.
