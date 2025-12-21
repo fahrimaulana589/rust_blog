@@ -1,6 +1,6 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct SuccessResponse<T> {
     pub message: String,
     #[serde(skip_serializing_if = "Option::is_none")]

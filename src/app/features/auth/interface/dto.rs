@@ -25,7 +25,7 @@ pub struct ResetPasswordRequestDto {
     pub new_password: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UserResponseDto {
     pub username: String,
     pub email: String,
