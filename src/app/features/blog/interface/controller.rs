@@ -94,7 +94,13 @@ pub async fn delete_category(
         Ok(_) => HttpResponse::Ok().json(map_success_response(
             "Category deleted successfully".to_string(),
         )),
-        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+        Err(e) => {
+            if e.contains("not found") {
+                HttpResponse::NotFound().json(map_string_error(e))
+            } else {
+                HttpResponse::InternalServerError().json(map_string_error(e))
+            }
+        }
     }
 }
 
@@ -173,7 +179,13 @@ pub async fn delete_tag(container: web::Data<Container>, id: web::Path<i32>) -> 
         Ok(_) => {
             HttpResponse::Ok().json(map_success_response("Tag deleted successfully".to_string()))
         }
-        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+        Err(e) => {
+            if e.contains("not found") {
+                HttpResponse::NotFound().json(map_string_error(e))
+            } else {
+                HttpResponse::InternalServerError().json(map_string_error(e))
+            }
+        }
     }
 }
 
@@ -210,11 +222,7 @@ pub async fn get_blogs(container: web::Data<Container>) -> impl Responder {
 
 #[get("/blogs/{id}")]
 pub async fn get_blog(container: web::Data<Container>, id: web::Path<i32>) -> impl Responder {
-    match container
-        .get_blog_usecase
-        .execute(id.into_inner())
-        .await
-    {
+    match container.get_blog_usecase.execute(id.into_inner()).await {
         Ok(blog) => HttpResponse::Ok().json(map_success_with_data(
             "Blog fetched successfully".to_string(),
             blog,
@@ -251,18 +259,17 @@ pub async fn update_blog(
 }
 
 #[delete("/blogs/{id}")]
-pub async fn delete_blog(
-    container: web::Data<Container>,
-    id: web::Path<i32>,
-) -> impl Responder {
-    match container
-        .delete_blog_usecase
-        .execute(id.into_inner())
-        .await
-    {
+pub async fn delete_blog(container: web::Data<Container>, id: web::Path<i32>) -> impl Responder {
+    match container.delete_blog_usecase.execute(id.into_inner()).await {
         Ok(_) => HttpResponse::Ok().json(map_success_response(
             "Blog deleted successfully".to_string(),
         )),
-        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+        Err(e) => {
+            if e.contains("not found") {
+                HttpResponse::NotFound().json(map_string_error(e))
+            } else {
+                HttpResponse::InternalServerError().json(map_string_error(e))
+            }
+        }
     }
 }

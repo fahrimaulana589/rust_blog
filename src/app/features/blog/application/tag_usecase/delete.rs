@@ -12,7 +12,10 @@ impl Execute {
     }
 
     pub async fn execute(&self, id: i32) -> Result<(), String> {
-        self.repository.delete_tag(id).map_err(|e| e.to_string())?;
+        let rows_affected = self.repository.delete_tag(id).map_err(|e| e.to_string())?;
+        if rows_affected == 0 {
+            return Err("Tag not found".to_string());
+        }
         Ok(())
     }
 }

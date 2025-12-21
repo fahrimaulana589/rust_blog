@@ -18,7 +18,10 @@ impl Execute {
             .delete_blog_tags_by_blog_id(id)
             .map_err(|e| e.to_string())?;
 
-        self.repository.delete_blog(id).map_err(|e| e.to_string())?;
+        let rows_affected = self.repository.delete_blog(id).map_err(|e| e.to_string())?;
+        if rows_affected == 0 {
+            return Err("Blog not found".to_string());
+        }
         Ok(())
     }
 }

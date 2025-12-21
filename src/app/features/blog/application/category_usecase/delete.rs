@@ -12,9 +12,15 @@ impl Execute {
     }
 
     pub async fn execute(&self, id: i32) -> Result<(), String> {
-        self.repository
+        let rows_affected = self
+            .repository
             .delete_category(id)
             .map_err(|e| e.to_string())?;
+
+        if rows_affected == 0 {
+            return Err("Category not found".to_string());
+        }
+
         Ok(())
     }
 }
