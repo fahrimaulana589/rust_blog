@@ -35,6 +35,11 @@ src/
    - **DTOs**: Define data ownership for Requests (`...RequestDto`) and Responses (`...ResponseDto`).
    - **Validation**: Explicitly trigger `.validate()` on DTOs.
    - **Response**: Use `impl Responder`. Map success with `crate::utils::success_response` and errors with `crate::utils::error_response`.
+   - **Pagination**:
+     - All list endpoints **MUST** be paginated (Default: `page=1`, `per_page=10`).
+     - Request: Use `PaginationRequestDto`.
+     - Response: Use `PaginatedResponseDto<T>` wrapping items and metadata (`meta`).
+     - Repository: Must accept `limit` and `offset` and return `(items, total_count)`.
 
 2. **Application Layer (`application/`)**
    - **Use Cases**: Contains business logic.
@@ -131,10 +136,14 @@ src/
 - **Data flows**:
     - **Request**: Construct using DTOs defined in `interface/dto.rs`.
     - **Response**: Parse into `SuccessResponse<T>` to validate both the wrapper and the data.
-- **Coverage Requirements**:
+    - **Coverage Requirements**:
     - **Happy Path**: Verify 200/201 status and correct data return.
     - **Error Path**: Verify 400/401/404/500 statuses for invalid inputs or states.
     - **Persistence**: Verify database state changes (e.g., fetch by ID after create).
+    - **Pagination**: Verify `items` and `meta` fields in list responses.
+- **Test Data Integrity**:
+    - **Uniqueness**: Append unique identifiers (e.g., `chrono::Utc::now().timestamp_micros()`) to fields with unique constraints (names, titles) to prevent "Duplicate entry" errors.
+    - **List Verification**: When verifying a created item is in a list, request a large page size (e.g., `?per_page=1000`) to ensure the item is retrieved regardless of database state.
 
 ### 4. Schema Adherence (STRICT)
 - **Goal**: Ensure tests validate the API contract and catch schema regressions.
