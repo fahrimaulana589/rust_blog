@@ -4,6 +4,7 @@ use crate::app::features::home::application::usecase as home_usecase;
 
 use crate::app::features::auth::application::usecase as auth_usecase;
 use crate::app::features::blog::application::category_usecase;
+use crate::app::features::blog::application::tag_usecase;
 use crate::app::features::blog::domain::repository::BlogRepository;
 use crate::app::features::blog::infrastructure::repository_impl::BlogRepositoryImpl;
 use crate::app::features::home::domain::repository::CountRepository;
@@ -27,6 +28,11 @@ pub struct Container {
     pub get_category_usecase: category_usecase::get::Execute,
     pub update_category_usecase: category_usecase::update::Execute,
     pub delete_category_usecase: category_usecase::delete::Execute,
+    pub create_tag_usecase: tag_usecase::create::Execute,
+    pub get_tags_usecase: tag_usecase::get_all::Execute,
+    pub get_tag_usecase: tag_usecase::get::Execute,
+    pub update_tag_usecase: tag_usecase::update::Execute,
+    pub delete_tag_usecase: tag_usecase::delete::Execute,
 }
 
 impl Container {
@@ -64,6 +70,12 @@ impl Container {
         let delete_category_usecase =
             category_usecase::delete::Execute::new(blog_repository.clone());
 
+        let create_tag_usecase = tag_usecase::create::Execute::new(blog_repository.clone());
+        let get_tags_usecase = tag_usecase::get_all::Execute::new(blog_repository.clone());
+        let get_tag_usecase = tag_usecase::get::Execute::new(blog_repository.clone());
+        let update_tag_usecase = tag_usecase::update::Execute::new(blog_repository.clone());
+        let delete_tag_usecase = tag_usecase::delete::Execute::new(blog_repository.clone());
+
         Self {
             config,
             count_usecase,
@@ -76,6 +88,11 @@ impl Container {
             get_category_usecase,
             update_category_usecase,
             delete_category_usecase,
+            create_tag_usecase,
+            get_tags_usecase,
+            get_tag_usecase,
+            update_tag_usecase,
+            delete_tag_usecase,
         }
     }
 }

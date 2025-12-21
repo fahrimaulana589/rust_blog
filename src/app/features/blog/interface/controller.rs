@@ -1,5 +1,5 @@
 use crate::app::features::blog::interface::dto::{
-    CreateCategoryRequestDto, UpdateCategoryRequestDto,
+    CreateCategoryRequestDto, CreateTagRequestDto, UpdateCategoryRequestDto, UpdateTagRequestDto,
 };
 use crate::utils::di::Container;
 use crate::utils::error_response::{map_string_error, map_validation_error};
@@ -93,6 +93,85 @@ pub async fn delete_category(
         Ok(_) => HttpResponse::Ok().json(map_success_response(
             "Category deleted successfully".to_string(),
         )),
+        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+    }
+}
+
+#[post("/tags")]
+pub async fn create_tag(
+    container: web::Data<Container>,
+    payload: web::Json<CreateTagRequestDto>,
+) -> impl Responder {
+    if let Err(e) = payload.validate() {
+        return HttpResponse::BadRequest().json(map_validation_error(e));
+    }
+    match container
+        .create_tag_usecase
+        .execute(payload.into_inner())
+        .await
+    {
+        Ok(_) => {
+            HttpResponse::Ok().json(map_success_response("Tag created successfully".to_string()))
+        }
+        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+    }
+}
+
+#[get("/tags")]
+pub async fn get_tags(container: web::Data<Container>) -> impl Responder {
+    match container.get_tags_usecase.execute().await {
+        Ok(tags) => HttpResponse::Ok().json(map_success_with_data(
+            "Tags fetched successfully".to_string(),
+            tags,
+        )),
+        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+    }
+}
+
+#[get("/tags/{id}")]
+pub async fn get_tag(container: web::Data<Container>, id: web::Path<i32>) -> impl Responder {
+    match container.get_tag_usecase.execute(id.into_inner()).await {
+        Ok(tag) => HttpResponse::Ok().json(map_success_with_data(
+            "Tag fetched successfully".to_string(),
+            tag,
+        )),
+        Err(e) => {
+            if e.contains("not found") {
+                HttpResponse::NotFound().json(map_string_error(e))
+            } else {
+                HttpResponse::InternalServerError().json(map_string_error(e))
+            }
+        }
+    }
+}
+
+#[put("/tags/{id}")]
+pub async fn update_tag(
+    container: web::Data<Container>,
+    id: web::Path<i32>,
+    payload: web::Json<UpdateTagRequestDto>,
+) -> impl Responder {
+    if let Err(e) = payload.validate() {
+        return HttpResponse::BadRequest().json(map_validation_error(e));
+    }
+    match container
+        .update_tag_usecase
+        .execute(id.into_inner(), payload.into_inner())
+        .await
+    {
+        Ok(_) => {
+            HttpResponse::Ok().json(map_success_response("Tag updated successfully".to_string()))
+        }
+        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+    }
+}
+
+#[delete("/tags/{id}")]
+pub async fn delete_tag(container: web::Data<Container>, id: web::Path<i32>) -> impl Responder {
+    match container.delete_tag_usecase.execute(id.into_inner()).await {
+        Ok(_) => {
+            HttpResponse::Ok().json(map_success_response("Tag deleted successfully".to_string()))
+        }
         Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
     }
 }

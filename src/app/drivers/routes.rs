@@ -16,7 +16,12 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
             .service(app::features::blog::interface::controller::get_categories)
             .service(app::features::blog::interface::controller::get_category)
             .service(app::features::blog::interface::controller::update_category)
-            .service(app::features::blog::interface::controller::delete_category),
+            .service(app::features::blog::interface::controller::delete_category)
+            .service(app::features::blog::interface::controller::create_tag)
+            .service(app::features::blog::interface::controller::get_tags)
+            .service(app::features::blog::interface::controller::get_tag)
+            .service(app::features::blog::interface::controller::update_tag)
+            .service(app::features::blog::interface::controller::delete_tag),
     )
     .service(app::features::auth::interface::controller::login)
     .service(app::features::auth::interface::controller::forgot_password)

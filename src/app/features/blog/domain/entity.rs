@@ -20,16 +20,16 @@ pub struct NewCategory {
 #[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name =tags)]
 pub struct Tag {
-    id: i32,
-    name: String,
-    created_at: NaiveDateTime,
-    updated_at: NaiveDateTime,
+    pub id: i32,
+    pub name: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Insertable, AsChangeset)]
 #[diesel(table_name =tags)]
 pub struct NewTag {
-    name: String,
+    pub name: String,
 }
 
 #[derive(Identifiable, Queryable, Selectable, Associations)]
