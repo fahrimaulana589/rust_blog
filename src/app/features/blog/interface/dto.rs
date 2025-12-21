@@ -83,3 +83,23 @@ pub struct BlogResponseDto {
     pub updated_at: String,
     pub published_at: Option<String>,
 }
+
+#[derive(Deserialize, Serialize, Validate)]
+pub struct PaginationRequestDto {
+    pub page: Option<i64>,
+    pub per_page: Option<i64>,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct MetaDto {
+    pub page: i64,
+    pub per_page: i64,
+    pub total_pages: i64,
+    pub total_items: i64,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct PaginatedResponseDto<T> {
+    pub items: Vec<T>,
+    pub meta: MetaDto,
+}

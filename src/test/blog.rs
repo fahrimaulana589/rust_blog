@@ -7,6 +7,7 @@ use crate::test::helpers::{login_admin, seed_user};
 use crate::utils::di::Container;
 use crate::utils::success_response::SuccessResponse;
 use actix_web::test;
+use chrono::Utc;
 use serial_test::serial;
 
 #[actix_web::test]
@@ -19,7 +20,7 @@ async fn test_create_blog() {
 
     // Create Category
     let category_dto = CreateCategoryRequestDto {
-        name: "Blog Category".to_string(),
+        name: format!("Blog Category {}", Utc::now().timestamp_micros()),
     };
     let req = test::TestRequest::post()
         .uri("/app/categories")
@@ -30,7 +31,7 @@ async fn test_create_blog() {
 
     // Create Tag
     let tag_dto = CreateTagRequestDto {
-        name: "Blog Tag".to_string(),
+        name: format!("Blog Tag {}", Utc::now().timestamp_micros()),
     };
     let req = test::TestRequest::post()
         .uri("/app/tags")
@@ -46,7 +47,7 @@ async fn test_create_blog() {
 
     // Create Blog
     let create_dto = CreateBlogRequestDto {
-        title: "Test Blog".to_string(),
+        title: format!("Test Blog {}", Utc::now().timestamp_micros()),
         content: "Content".to_string(),
         category_id: 1,
         tag_ids: Some(vec![1]),
@@ -75,7 +76,7 @@ async fn test_get_blogs() {
     // Setup Data
     // Category
     let category_dto = CreateCategoryRequestDto {
-        name: "Get Blog Category".to_string(),
+        name: format!("Get Blog Category {}", Utc::now().timestamp_micros()),
     };
     let req = test::TestRequest::post()
         .uri("/app/categories")
@@ -91,13 +92,15 @@ async fn test_get_blogs() {
     // Or just create and get response if it returns ID? Current create returns msg only.
     // Let's fetch all categories.
     let req = test::TestRequest::get()
-        .uri("/app/categories")
+        .uri("/app/categories?per_page=1000")
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
     let resp: SuccessResponse<
-        Vec<crate::app::features::blog::interface::dto::CategoryResponseDto>,
+        crate::app::features::blog::interface::dto::PaginatedResponseDto<
+            crate::app::features::blog::interface::dto::CategoryResponseDto,
+        >,
     > = test::call_and_read_body_json(&app, req).await;
-    let cat_id = resp.data.unwrap().last().unwrap().id;
+    let cat_id = resp.data.unwrap().items.last().unwrap().id;
 
     let create_dto = CreateBlogRequestDto {
         title: "Test Get Blog".to_string(),
@@ -117,12 +120,13 @@ async fn test_get_blogs() {
 
     // Get Blogs
     let req = test::TestRequest::get()
-        .uri("/app/blogs")
+        .uri("/app/blogs?per_page=1000")
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
-    let resp: SuccessResponse<Vec<BlogResponseDto>> =
-        test::call_and_read_body_json(&app, req).await;
-    assert!(resp.data.unwrap().len() > 0);
+    let resp: SuccessResponse<
+        crate::app::features::blog::interface::dto::PaginatedResponseDto<BlogResponseDto>,
+    > = test::call_and_read_body_json(&app, req).await;
+    assert!(resp.data.unwrap().items.len() > 0);
 }
 
 #[actix_web::test]
@@ -135,7 +139,7 @@ async fn test_get_blog_by_id() {
 
     // Setup Data (Category)
     let category_dto = CreateCategoryRequestDto {
-        name: "ID Cat".to_string(),
+        name: format!("ID Cat {}", Utc::now().timestamp_micros()),
     };
     let req = test::TestRequest::post()
         .uri("/app/categories")
@@ -146,17 +150,20 @@ async fn test_get_blog_by_id() {
 
     // Get Cat ID
     let req = test::TestRequest::get()
-        .uri("/app/categories")
+        .uri("/app/categories?per_page=1000")
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
     let resp: SuccessResponse<
-        Vec<crate::app::features::blog::interface::dto::CategoryResponseDto>,
+        crate::app::features::blog::interface::dto::PaginatedResponseDto<
+            crate::app::features::blog::interface::dto::CategoryResponseDto,
+        >,
     > = test::call_and_read_body_json(&app, req).await;
-    let cat_id = resp.data.unwrap().last().unwrap().id;
+    let cat_id = resp.data.unwrap().items.last().unwrap().id;
 
     // Create Blog
+    let unique_title = format!("Test ID Blog {}", Utc::now().timestamp_micros());
     let create_dto = CreateBlogRequestDto {
-        title: "Test ID Blog".to_string(),
+        title: unique_title.clone(),
         content: "Content".to_string(),
         category_id: cat_id,
         tag_ids: None,
@@ -172,17 +179,20 @@ async fn test_get_blog_by_id() {
     test::call_service(&app, req).await;
 
     // Find Blog ID
+    // Find Blog ID
     let req = test::TestRequest::get()
-        .uri("/app/blogs")
+        .uri("/app/blogs?per_page=1000")
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
-    let resp: SuccessResponse<Vec<BlogResponseDto>> =
-        test::call_and_read_body_json(&app, req).await;
+    let resp: SuccessResponse<
+        crate::app::features::blog::interface::dto::PaginatedResponseDto<BlogResponseDto>,
+    > = test::call_and_read_body_json(&app, req).await;
     let blog = resp
         .data
         .unwrap()
+        .items
         .into_iter()
-        .find(|b| b.title == "Test ID Blog")
+        .find(|b| b.title == unique_title)
         .unwrap();
 
     // Get By ID
@@ -191,7 +201,7 @@ async fn test_get_blog_by_id() {
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
     let resp: SuccessResponse<BlogResponseDto> = test::call_and_read_body_json(&app, req).await;
-    assert_eq!(resp.data.unwrap().title, "Test ID Blog");
+    assert_eq!(resp.data.unwrap().title, unique_title);
 }
 
 #[actix_web::test]
@@ -204,7 +214,7 @@ async fn test_update_blog() {
 
     // Setup Data (Category)
     let category_dto = CreateCategoryRequestDto {
-        name: "Upd Cat".to_string(),
+        name: format!("Upd Cat {}", Utc::now().timestamp_micros()),
     };
     let req = test::TestRequest::post()
         .uri("/app/categories")
@@ -213,17 +223,20 @@ async fn test_update_blog() {
         .to_request();
     test::call_service(&app, req).await;
     let req = test::TestRequest::get()
-        .uri("/app/categories")
+        .uri("/app/categories?per_page=1000")
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
     let resp: SuccessResponse<
-        Vec<crate::app::features::blog::interface::dto::CategoryResponseDto>,
+        crate::app::features::blog::interface::dto::PaginatedResponseDto<
+            crate::app::features::blog::interface::dto::CategoryResponseDto,
+        >,
     > = test::call_and_read_body_json(&app, req).await;
-    let cat_id = resp.data.unwrap().last().unwrap().id;
+    let cat_id = resp.data.unwrap().items.last().unwrap().id;
 
     // Create Blog
+    let unique_title = format!("Test Update Blog {}", Utc::now().timestamp_micros());
     let create_dto = CreateBlogRequestDto {
-        title: "Test Update Blog".to_string(),
+        title: unique_title.clone(),
         content: "Content".to_string(),
         category_id: cat_id,
         tag_ids: None,
@@ -239,17 +252,20 @@ async fn test_update_blog() {
     test::call_service(&app, req).await;
 
     // Find Blog ID
+    // Find Blog ID
     let req = test::TestRequest::get()
-        .uri("/app/blogs")
+        .uri("/app/blogs?per_page=1000")
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
-    let resp: SuccessResponse<Vec<BlogResponseDto>> =
-        test::call_and_read_body_json(&app, req).await;
+    let resp: SuccessResponse<
+        crate::app::features::blog::interface::dto::PaginatedResponseDto<BlogResponseDto>,
+    > = test::call_and_read_body_json(&app, req).await;
     let blog = resp
         .data
         .unwrap()
+        .items
         .into_iter()
-        .find(|b| b.title == "Test Update Blog")
+        .find(|b| b.title == unique_title)
         .unwrap();
 
     // Update
@@ -289,7 +305,7 @@ async fn test_delete_blog() {
 
     // Setup Data (Category)
     let category_dto = CreateCategoryRequestDto {
-        name: "Del Cat".to_string(),
+        name: format!("Del Cat {}", Utc::now().timestamp_micros()),
     };
     let req = test::TestRequest::post()
         .uri("/app/categories")
@@ -298,17 +314,20 @@ async fn test_delete_blog() {
         .to_request();
     test::call_service(&app, req).await;
     let req = test::TestRequest::get()
-        .uri("/app/categories")
+        .uri("/app/categories?per_page=1000")
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
     let resp: SuccessResponse<
-        Vec<crate::app::features::blog::interface::dto::CategoryResponseDto>,
+        crate::app::features::blog::interface::dto::PaginatedResponseDto<
+            crate::app::features::blog::interface::dto::CategoryResponseDto,
+        >,
     > = test::call_and_read_body_json(&app, req).await;
-    let cat_id = resp.data.unwrap().last().unwrap().id;
+    let cat_id = resp.data.unwrap().items.last().unwrap().id;
 
     // Create Blog
+    let unique_title = format!("Test Delete Blog {}", Utc::now().timestamp_micros());
     let create_dto = CreateBlogRequestDto {
-        title: "Test Delete Blog".to_string(),
+        title: unique_title.clone(),
         content: "Content".to_string(),
         category_id: cat_id,
         tag_ids: None,
@@ -324,17 +343,20 @@ async fn test_delete_blog() {
     test::call_service(&app, req).await;
 
     // Find Blog ID
+    // Find Blog ID
     let req = test::TestRequest::get()
-        .uri("/app/blogs")
+        .uri("/app/blogs?per_page=1000")
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
-    let resp: SuccessResponse<Vec<BlogResponseDto>> =
-        test::call_and_read_body_json(&app, req).await;
+    let resp: SuccessResponse<
+        crate::app::features::blog::interface::dto::PaginatedResponseDto<BlogResponseDto>,
+    > = test::call_and_read_body_json(&app, req).await;
     let blog = resp
         .data
         .unwrap()
+        .items
         .into_iter()
-        .find(|b| b.title == "Test Delete Blog")
+        .find(|b| b.title == unique_title)
         .unwrap();
 
     // Delete

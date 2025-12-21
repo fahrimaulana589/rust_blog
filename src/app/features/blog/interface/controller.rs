@@ -1,6 +1,6 @@
 use crate::app::features::blog::interface::dto::{
-    CreateBlogRequestDto, CreateCategoryRequestDto, CreateTagRequestDto, UpdateBlogRequestDto,
-    UpdateCategoryRequestDto, UpdateTagRequestDto,
+    CreateBlogRequestDto, CreateCategoryRequestDto, CreateTagRequestDto, PaginationRequestDto,
+    UpdateBlogRequestDto, UpdateCategoryRequestDto, UpdateTagRequestDto,
 };
 use crate::utils::di::Container;
 use crate::utils::error_response::{map_string_error, map_validation_error};
@@ -29,8 +29,15 @@ pub async fn create_category(
 }
 
 #[get("/categories")]
-pub async fn get_categories(container: web::Data<Container>) -> impl Responder {
-    match container.get_categories_usecase.execute().await {
+pub async fn get_categories(
+    container: web::Data<Container>,
+    query: web::Query<PaginationRequestDto>,
+) -> impl Responder {
+    match container
+        .get_categories_usecase
+        .execute(query.into_inner())
+        .await
+    {
         Ok(categories) => HttpResponse::Ok().json(map_success_with_data(
             "Categories fetched successfully".to_string(),
             categories,
@@ -125,8 +132,11 @@ pub async fn create_tag(
 }
 
 #[get("/tags")]
-pub async fn get_tags(container: web::Data<Container>) -> impl Responder {
-    match container.get_tags_usecase.execute().await {
+pub async fn get_tags(
+    container: web::Data<Container>,
+    query: web::Query<PaginationRequestDto>,
+) -> impl Responder {
+    match container.get_tags_usecase.execute(query.into_inner()).await {
         Ok(tags) => HttpResponse::Ok().json(map_success_with_data(
             "Tags fetched successfully".to_string(),
             tags,
@@ -210,8 +220,15 @@ pub async fn create_blog(
 }
 
 #[get("/blogs")]
-pub async fn get_blogs(container: web::Data<Container>) -> impl Responder {
-    match container.get_blogs_usecase.execute().await {
+pub async fn get_blogs(
+    container: web::Data<Container>,
+    query: web::Query<PaginationRequestDto>,
+) -> impl Responder {
+    match container
+        .get_blogs_usecase
+        .execute(query.into_inner())
+        .await
+    {
         Ok(blogs) => HttpResponse::Ok().json(map_success_with_data(
             "Blogs fetched successfully".to_string(),
             blogs,

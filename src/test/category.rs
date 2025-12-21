@@ -6,6 +6,7 @@ use crate::test::helpers::{login_admin, seed_user};
 use crate::utils::di::Container;
 use crate::utils::success_response::SuccessResponse;
 use actix_web::test;
+use chrono::Utc;
 use serial_test::serial;
 
 #[actix_web::test]
@@ -17,7 +18,7 @@ async fn test_create_category() {
     let token = login_admin(&app, &container).await;
 
     let create_dto = CreateCategoryRequestDto {
-        name: "Test Create Category".to_string(),
+        name: format!("Test Create Category {}", Utc::now().timestamp_micros()),
     };
 
     let req = test::TestRequest::post()
@@ -39,7 +40,7 @@ async fn test_get_categories() {
 
     // Create a category to ensure at least one exists
     let create_dto = CreateCategoryRequestDto {
-        name: "Test Get Category".to_string(),
+        name: format!("Test Get Category {}", Utc::now().timestamp_micros()),
     };
     let req = test::TestRequest::post()
         .uri("/app/categories")
@@ -49,12 +50,13 @@ async fn test_get_categories() {
     test::call_service(&app, req).await;
 
     let req = test::TestRequest::get()
-        .uri("/app/categories")
+        .uri("/app/categories?per_page=1000")
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
-    let resp: SuccessResponse<Vec<CategoryResponseDto>> =
-        test::call_and_read_body_json(&app, req).await;
-    assert!(resp.data.unwrap().len() > 0);
+    let resp: SuccessResponse<
+        crate::app::features::blog::interface::dto::PaginatedResponseDto<CategoryResponseDto>,
+    > = test::call_and_read_body_json(&app, req).await;
+    assert!(resp.data.unwrap().items.len() > 0);
 }
 
 #[actix_web::test]
@@ -66,8 +68,9 @@ async fn test_get_category_by_id() {
     let token = login_admin(&app, &container).await;
 
     // Create
+    let unique_name = format!("Test GetID Category {}", Utc::now().timestamp_micros());
     let create_dto = CreateCategoryRequestDto {
-        name: "Test GetID Category".to_string(),
+        name: unique_name.clone(),
     };
     let req = test::TestRequest::post()
         .uri("/app/categories")
@@ -79,16 +82,18 @@ async fn test_get_category_by_id() {
 
     // Retrieve to get ID
     let req = test::TestRequest::get()
-        .uri("/app/categories")
+        .uri("/app/categories?per_page=1000")
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
-    let resp: SuccessResponse<Vec<CategoryResponseDto>> =
-        test::call_and_read_body_json(&app, req).await;
+    let resp: SuccessResponse<
+        crate::app::features::blog::interface::dto::PaginatedResponseDto<CategoryResponseDto>,
+    > = test::call_and_read_body_json(&app, req).await;
     let category = resp
         .data
         .unwrap()
+        .items
         .into_iter()
-        .find(|c| c.name == "Test GetID Category")
+        .find(|c| c.name == unique_name)
         .expect("Category not found");
 
     // Get by ID
@@ -97,7 +102,7 @@ async fn test_get_category_by_id() {
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
     let resp: SuccessResponse<CategoryResponseDto> = test::call_and_read_body_json(&app, req).await;
-    assert_eq!(resp.data.unwrap().name, "Test GetID Category");
+    assert_eq!(resp.data.unwrap().name, unique_name);
 }
 
 #[actix_web::test]
@@ -109,8 +114,9 @@ async fn test_update_category() {
     let token = login_admin(&app, &container).await;
 
     // Create
+    let unique_name = format!("Test Update Category {}", Utc::now().timestamp_micros());
     let create_dto = CreateCategoryRequestDto {
-        name: "Test Update Category".to_string(),
+        name: unique_name.clone(),
     };
     let req = test::TestRequest::post()
         .uri("/app/categories")
@@ -122,16 +128,18 @@ async fn test_update_category() {
 
     // Get ID
     let req = test::TestRequest::get()
-        .uri("/app/categories")
+        .uri("/app/categories?per_page=1000")
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
-    let resp: SuccessResponse<Vec<CategoryResponseDto>> =
-        test::call_and_read_body_json(&app, req).await;
+    let resp: SuccessResponse<
+        crate::app::features::blog::interface::dto::PaginatedResponseDto<CategoryResponseDto>,
+    > = test::call_and_read_body_json(&app, req).await;
     let category = resp
         .data
         .unwrap()
+        .items
         .into_iter()
-        .find(|c| c.name == "Test Update Category")
+        .find(|c| c.name == unique_name)
         .expect("Category not found");
 
     // Update
@@ -164,8 +172,9 @@ async fn test_delete_category() {
     let token = login_admin(&app, &container).await;
 
     // Create
+    let unique_name = format!("Test Delete Category {}", Utc::now().timestamp_micros());
     let create_dto = CreateCategoryRequestDto {
-        name: "Test Delete Category".to_string(),
+        name: unique_name.clone(),
     };
     let req = test::TestRequest::post()
         .uri("/app/categories")
@@ -177,16 +186,18 @@ async fn test_delete_category() {
 
     // Get ID
     let req = test::TestRequest::get()
-        .uri("/app/categories")
+        .uri("/app/categories?per_page=1000")
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
-    let resp: SuccessResponse<Vec<CategoryResponseDto>> =
-        test::call_and_read_body_json(&app, req).await;
+    let resp: SuccessResponse<
+        crate::app::features::blog::interface::dto::PaginatedResponseDto<CategoryResponseDto>,
+    > = test::call_and_read_body_json(&app, req).await;
     let category = resp
         .data
         .unwrap()
+        .items
         .into_iter()
-        .find(|c| c.name == "Test Delete Category")
+        .find(|c| c.name == unique_name)
         .expect("Category not found");
 
     // Delete

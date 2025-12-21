@@ -18,12 +18,19 @@ impl BlogRepositoryImpl {
 }
 
 impl BlogRepository for BlogRepositoryImpl {
-    fn get_all_blog(&self) -> QueryResult<Vec<Blog>> {
+    fn get_all_blog(&self, limit: i64, offset: i64) -> QueryResult<(Vec<Blog>, i64)> {
         let mut conn = self
             .pool
             .get()
             .expect("couldn't get db connection from pool");
-        blog::table.load::<Blog>(&mut conn)
+
+        let count = blog::table.count().get_result(&mut conn)?;
+        let items = blog::table
+            .limit(limit)
+            .offset(offset)
+            .load::<Blog>(&mut conn)?;
+
+        Ok((items, count))
     }
     fn get_blog_by_id(&self, id: i32) -> QueryResult<Option<Blog>> {
         let mut conn = self
@@ -75,12 +82,19 @@ impl BlogRepository for BlogRepositoryImpl {
             .select(tags::all_columns)
             .load::<Tag>(&mut conn)
     }
-    fn get_all_tag(&self) -> QueryResult<Vec<Tag>> {
+    fn get_all_tag(&self, limit: i64, offset: i64) -> QueryResult<(Vec<Tag>, i64)> {
         let mut conn = self
             .pool
             .get()
             .expect("couldn't get db connection from pool");
-        tags::table.load::<Tag>(&mut conn)
+
+        let count = tags::table.count().get_result(&mut conn)?;
+        let items = tags::table
+            .limit(limit)
+            .offset(offset)
+            .load::<Tag>(&mut conn)?;
+
+        Ok((items, count))
     }
     fn get_tag_by_id(&self, id: i32) -> QueryResult<Option<Tag>> {
         let mut conn = self
@@ -114,12 +128,19 @@ impl BlogRepository for BlogRepositoryImpl {
             .expect("couldn't get db connection from pool");
         diesel::delete(tags::table.find(id)).execute(&mut conn)
     }
-    fn get_all_category(&self) -> QueryResult<Vec<Category>> {
+    fn get_all_category(&self, limit: i64, offset: i64) -> QueryResult<(Vec<Category>, i64)> {
         let mut conn = self
             .pool
             .get()
             .expect("couldn't get db connection from pool");
-        categories::table.load::<Category>(&mut conn)
+
+        let count = categories::table.count().get_result(&mut conn)?;
+        let items = categories::table
+            .limit(limit)
+            .offset(offset)
+            .load::<Category>(&mut conn)?;
+
+        Ok((items, count))
     }
     fn get_category_by_id(&self, id: i32) -> QueryResult<Option<Category>> {
         let mut conn = self
