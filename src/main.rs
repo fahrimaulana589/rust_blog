@@ -3,6 +3,9 @@ mod config;
 mod schema;
 mod utils;
 
+#[cfg(test)]
+mod test;
+
 use actix_web::{App, HttpServer, web};
 use app::drivers::middlewares::state::State;
 
