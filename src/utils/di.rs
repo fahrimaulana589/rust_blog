@@ -3,6 +3,7 @@ use crate::app::features::auth::infrastructure::repository_impl::UserRepositoryI
 use crate::app::features::home::application::usecase as home_usecase;
 
 use crate::app::features::auth::application::usecase as auth_usecase;
+use crate::app::features::blog::application::blog_usecase;
 use crate::app::features::blog::application::category_usecase;
 use crate::app::features::blog::application::tag_usecase;
 use crate::app::features::blog::domain::repository::BlogRepository;
@@ -33,6 +34,11 @@ pub struct Container {
     pub get_tag_usecase: tag_usecase::get::Execute,
     pub update_tag_usecase: tag_usecase::update::Execute,
     pub delete_tag_usecase: tag_usecase::delete::Execute,
+    pub create_blog_usecase: blog_usecase::create::Execute,
+    pub get_blogs_usecase: blog_usecase::get_all::Execute,
+    pub get_blog_usecase: blog_usecase::get::Execute,
+    pub update_blog_usecase: blog_usecase::update::Execute,
+    pub delete_blog_usecase: blog_usecase::delete::Execute,
 }
 
 impl Container {
@@ -76,6 +82,12 @@ impl Container {
         let update_tag_usecase = tag_usecase::update::Execute::new(blog_repository.clone());
         let delete_tag_usecase = tag_usecase::delete::Execute::new(blog_repository.clone());
 
+        let create_blog_usecase = blog_usecase::create::Execute::new(blog_repository.clone());
+        let get_blogs_usecase = blog_usecase::get_all::Execute::new(blog_repository.clone());
+        let get_blog_usecase = blog_usecase::get::Execute::new(blog_repository.clone());
+        let update_blog_usecase = blog_usecase::update::Execute::new(blog_repository.clone());
+        let delete_blog_usecase = blog_usecase::delete::Execute::new(blog_repository.clone());
+
         Self {
             config,
             count_usecase,
@@ -93,6 +105,11 @@ impl Container {
             get_tag_usecase,
             update_tag_usecase,
             delete_tag_usecase,
+            create_blog_usecase,
+            get_blogs_usecase,
+            get_blog_usecase,
+            update_blog_usecase,
+            delete_blog_usecase,
         }
     }
 }

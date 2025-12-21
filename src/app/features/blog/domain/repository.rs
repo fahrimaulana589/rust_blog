@@ -10,6 +10,8 @@ pub trait BlogRepository {
     fn create_blog_tags(&self, blog_tags: BlogTags) -> QueryResult<BlogTags>;
     fn update_blog(&self, id: i32, blog: NewBlog) -> QueryResult<Blog>;
     fn delete_blog(&self, id: i32) -> QueryResult<usize>;
+    fn delete_blog_tags_by_blog_id(&self, blog_id: i32) -> QueryResult<usize>;
+    fn get_tags_by_blog_id(&self, blog_id: i32) -> QueryResult<Vec<Tag>>;
     fn get_all_tag(&self) -> QueryResult<Vec<Tag>>;
     fn get_tag_by_id(&self, id: i32) -> QueryResult<Option<Tag>>;
     fn create_tag(&self, tag: NewTag) -> QueryResult<Tag>;

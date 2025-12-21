@@ -36,20 +36,20 @@ pub struct NewTag {
 #[diesel(table_name =blog)]
 #[diesel(belongs_to(Category,foreign_key = category_id))]
 pub struct Blog {
-    id: i32,
-    title: String,
-    content: String,
-    category_id: i32,
-    created_at: NaiveDateTime,
-    updated_at: NaiveDateTime,
+    pub id: i32,
+    pub title: String,
+    pub content: String,
+    pub category_id: i32,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Insertable, AsChangeset)]
 #[diesel(table_name =blog)]
 pub struct NewBlog {
-    title: String,
-    content: String,
-    category_id: i32,
+    pub title: String,
+    pub content: String,
+    pub category_id: i32,
 }
 
 #[derive(Identifiable, Queryable, Selectable, Associations, Insertable)]
@@ -58,6 +58,6 @@ pub struct NewBlog {
 #[diesel(belongs_to(Tag,foreign_key = tag_id))]
 #[diesel(primary_key(blog_id, tag_id))]
 pub struct BlogTags {
-    blog_id: i32,
-    tag_id: i32,
+    pub blog_id: i32,
+    pub tag_id: i32,
 }

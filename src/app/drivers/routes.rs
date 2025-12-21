@@ -21,7 +21,12 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
             .service(app::features::blog::interface::controller::get_tags)
             .service(app::features::blog::interface::controller::get_tag)
             .service(app::features::blog::interface::controller::update_tag)
-            .service(app::features::blog::interface::controller::delete_tag),
+            .service(app::features::blog::interface::controller::delete_tag)
+            .service(app::features::blog::interface::controller::create_blog)
+            .service(app::features::blog::interface::controller::get_blogs)
+            .service(app::features::blog::interface::controller::get_blog)
+            .service(app::features::blog::interface::controller::update_blog)
+            .service(app::features::blog::interface::controller::delete_blog),
     )
     .service(app::features::auth::interface::controller::login)
     .service(app::features::auth::interface::controller::forgot_password)

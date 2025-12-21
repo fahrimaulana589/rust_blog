@@ -1,0 +1,60 @@
+use crate::app::features::blog::domain::repository::BlogRepository;
+use crate::app::features::blog::interface::dto::{
+    BlogResponseDto, CategoryResponseDto, TagResponseDto,
+};
+use std::sync::Arc;
+
+#[derive(Clone)]
+pub struct Execute {
+    repository: Arc<dyn BlogRepository + Send + Sync>,
+}
+
+impl Execute {
+    pub fn new(repository: Arc<dyn BlogRepository + Send + Sync>) -> Self {
+        Self { repository }
+    }
+
+    pub async fn execute(&self) -> Result<Vec<BlogResponseDto>, String> {
+        let blogs = self.repository.get_all_blog().map_err(|e| e.to_string())?;
+
+        let mut dtos = Vec::new();
+
+        for blog in blogs {
+            let category = self
+                .repository
+                .get_category_by_id(blog.category_id)
+                .map_err(|e| e.to_string())?
+                .ok_or_else(|| "Category not found for blog".to_string())?;
+
+            let tags = self
+                .repository
+                .get_tags_by_blog_id(blog.id)
+                .map_err(|e| e.to_string())?;
+
+            dtos.push(BlogResponseDto {
+                id: blog.id,
+                title: blog.title,
+                content: blog.content,
+                category: CategoryResponseDto {
+                    id: category.id,
+                    name: category.name,
+                    created_at: category.created_at.to_string(),
+                    updated_at: category.updated_at.to_string(),
+                },
+                tags: tags
+                    .into_iter()
+                    .map(|t| TagResponseDto {
+                        id: t.id,
+                        name: t.name,
+                        created_at: t.created_at.to_string(),
+                        updated_at: t.updated_at.to_string(),
+                    })
+                    .collect(),
+                created_at: blog.created_at.to_string(),
+                updated_at: blog.updated_at.to_string(),
+            });
+        }
+
+        Ok(dtos)
+    }
+}

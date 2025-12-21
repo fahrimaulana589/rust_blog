@@ -1,5 +1,6 @@
 use crate::app::features::blog::interface::dto::{
-    CreateCategoryRequestDto, CreateTagRequestDto, UpdateCategoryRequestDto, UpdateTagRequestDto,
+    CreateBlogRequestDto, CreateCategoryRequestDto, CreateTagRequestDto, UpdateBlogRequestDto,
+    UpdateCategoryRequestDto, UpdateTagRequestDto,
 };
 use crate::utils::di::Container;
 use crate::utils::error_response::{map_string_error, map_validation_error};
@@ -172,6 +173,96 @@ pub async fn delete_tag(container: web::Data<Container>, id: web::Path<i32>) -> 
         Ok(_) => {
             HttpResponse::Ok().json(map_success_response("Tag deleted successfully".to_string()))
         }
+        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+    }
+}
+
+#[post("/blogs")]
+pub async fn create_blog(
+    container: web::Data<Container>,
+    payload: web::Json<CreateBlogRequestDto>,
+) -> impl Responder {
+    if let Err(e) = payload.validate() {
+        return HttpResponse::BadRequest().json(map_validation_error(e));
+    }
+    match container
+        .create_blog_usecase
+        .execute(payload.into_inner())
+        .await
+    {
+        Ok(_) => HttpResponse::Ok().json(map_success_response(
+            "Blog created successfully".to_string(),
+        )),
+        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+    }
+}
+
+#[get("/blogs")]
+pub async fn get_blogs(container: web::Data<Container>) -> impl Responder {
+    match container.get_blogs_usecase.execute().await {
+        Ok(blogs) => HttpResponse::Ok().json(map_success_with_data(
+            "Blogs fetched successfully".to_string(),
+            blogs,
+        )),
+        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+    }
+}
+
+#[get("/blogs/{id}")]
+pub async fn get_blog(container: web::Data<Container>, id: web::Path<i32>) -> impl Responder {
+    match container
+        .get_blog_usecase
+        .execute(id.into_inner())
+        .await
+    {
+        Ok(blog) => HttpResponse::Ok().json(map_success_with_data(
+            "Blog fetched successfully".to_string(),
+            blog,
+        )),
+        Err(e) => {
+            if e.contains("not found") {
+                HttpResponse::NotFound().json(map_string_error(e))
+            } else {
+                HttpResponse::InternalServerError().json(map_string_error(e))
+            }
+        }
+    }
+}
+
+#[put("/blogs/{id}")]
+pub async fn update_blog(
+    container: web::Data<Container>,
+    id: web::Path<i32>,
+    payload: web::Json<UpdateBlogRequestDto>,
+) -> impl Responder {
+    if let Err(e) = payload.validate() {
+        return HttpResponse::BadRequest().json(map_validation_error(e));
+    }
+    match container
+        .update_blog_usecase
+        .execute(id.into_inner(), payload.into_inner())
+        .await
+    {
+        Ok(_) => HttpResponse::Ok().json(map_success_response(
+            "Blog updated successfully".to_string(),
+        )),
+        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+    }
+}
+
+#[delete("/blogs/{id}")]
+pub async fn delete_blog(
+    container: web::Data<Container>,
+    id: web::Path<i32>,
+) -> impl Responder {
+    match container
+        .delete_blog_usecase
+        .execute(id.into_inner())
+        .await
+    {
+        Ok(_) => HttpResponse::Ok().json(map_success_response(
+            "Blog deleted successfully".to_string(),
+        )),
         Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
     }
 }

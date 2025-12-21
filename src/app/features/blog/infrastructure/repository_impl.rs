@@ -57,6 +57,24 @@ impl BlogRepository for BlogRepositoryImpl {
             .expect("couldn't get db connection from pool");
         diesel::delete(blog::table.find(id)).execute(&mut conn)
     }
+    fn delete_blog_tags_by_blog_id(&self, blog_id: i32) -> QueryResult<usize> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        diesel::delete(blog_tags::table.filter(blog_tags::blog_id.eq(blog_id))).execute(&mut conn)
+    }
+    fn get_tags_by_blog_id(&self, blog_id: i32) -> QueryResult<Vec<Tag>> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        blog_tags::table
+            .filter(blog_tags::blog_id.eq(blog_id))
+            .inner_join(tags::table)
+            .select(tags::all_columns)
+            .load::<Tag>(&mut conn)
+    }
     fn get_all_tag(&self) -> QueryResult<Vec<Tag>> {
         let mut conn = self
             .pool
