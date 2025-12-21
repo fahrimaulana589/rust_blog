@@ -8,6 +8,12 @@ diesel::table! {
         category_id -> Integer,
         created_at -> Timestamp,
         updated_at -> Timestamp,
+        slug -> Text,
+        excerpt -> Nullable<Text>,
+        thumbnail -> Nullable<Text>,
+        status -> Text,
+        published_at -> Nullable<Timestamp>,
+        view_count -> Integer,
     }
 }
 

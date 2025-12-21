@@ -15,7 +15,7 @@ impl Execute {
 
     pub async fn execute(&self, id: i32, dto: UpdateBlogRequestDto) -> Result<(), String> {
         // Check Existence
-        let _ = self
+        let existing_blog = self
             .repository
             .get_blog_by_id(id)
             .map_err(|e| e.to_string())?
@@ -31,11 +31,17 @@ impl Execute {
             return Err("Category not found".to_string());
         }
 
-        // Update Blog
+        // Update Blog (Merge DTO with existing)
         let new_blog = NewBlog {
             title: dto.title,
             content: dto.content,
             category_id: dto.category_id,
+            slug: existing_blog.slug, // Preserve slug
+            excerpt: dto.excerpt.or(existing_blog.excerpt),
+            thumbnail: dto.thumbnail.or(existing_blog.thumbnail),
+            status: dto.status.unwrap_or(existing_blog.status),
+            published_at: existing_blog.published_at, // Preserve published_at
+            view_count: existing_blog.view_count,     // Preserve view_count
         };
         self.repository
             .update_blog(id, new_blog)

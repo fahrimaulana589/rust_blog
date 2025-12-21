@@ -49,6 +49,9 @@ pub struct CreateBlogRequestDto {
     pub content: String,
     pub category_id: i32,
     pub tag_ids: Option<Vec<i32>>,
+    pub excerpt: Option<String>,
+    pub thumbnail: Option<String>,
+    pub status: Option<String>, // "DRAFT" or "PUBLISHED"
 }
 
 #[derive(Deserialize, Serialize, Validate)]
@@ -59,15 +62,24 @@ pub struct UpdateBlogRequestDto {
     pub content: String,
     pub category_id: i32,
     pub tag_ids: Option<Vec<i32>>,
+    pub excerpt: Option<String>,
+    pub thumbnail: Option<String>,
+    pub status: Option<String>,
 }
 
 #[derive(Deserialize, Serialize)]
 pub struct BlogResponseDto {
     pub id: i32,
     pub title: String,
+    pub slug: String,
     pub content: String,
+    pub excerpt: Option<String>,
+    pub thumbnail: Option<String>,
+    pub status: String,
+    pub view_count: i32,
     pub category: CategoryResponseDto,
     pub tags: Vec<TagResponseDto>,
     pub created_at: String,
     pub updated_at: String,
+    pub published_at: Option<String>,
 }

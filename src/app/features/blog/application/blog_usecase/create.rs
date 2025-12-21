@@ -25,10 +25,25 @@ impl Execute {
         }
 
         // Create Blog
+        // Create Blog
+        let slug = dto
+            .title
+            .to_lowercase()
+            .replace(" ", "-")
+            .chars()
+            .filter(|c| c.is_alphanumeric() || *c == '-')
+            .collect::<String>();
+
         let new_blog = NewBlog {
             title: dto.title,
             content: dto.content,
             category_id: dto.category_id,
+            slug,
+            excerpt: dto.excerpt,
+            thumbnail: dto.thumbnail,
+            status: dto.status.unwrap_or_else(|| "DRAFT".to_string()),
+            published_at: None, // Logic for published_at can be added here if needed
+            view_count: 0,
         };
         let created_blog = self
             .repository

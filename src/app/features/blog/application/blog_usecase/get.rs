@@ -38,8 +38,13 @@ impl Execute {
         // Assemble DTO
         Ok(BlogResponseDto {
             id: blog.id,
+            slug: blog.slug,
             title: blog.title,
             content: blog.content,
+            excerpt: blog.excerpt,
+            thumbnail: blog.thumbnail,
+            status: blog.status,
+            view_count: blog.view_count,
             category: CategoryResponseDto {
                 id: category.id,
                 name: category.name,
@@ -57,6 +62,7 @@ impl Execute {
                 .collect(),
             created_at: blog.created_at.to_string(),
             updated_at: blog.updated_at.to_string(),
+            published_at: blog.published_at.map(|t| t.to_string()),
         })
     }
 }

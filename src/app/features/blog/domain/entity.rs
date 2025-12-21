@@ -42,6 +42,12 @@ pub struct Blog {
     pub category_id: i32,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+    pub slug: String,
+    pub excerpt: Option<String>,
+    pub thumbnail: Option<String>,
+    pub status: String,
+    pub published_at: Option<NaiveDateTime>,
+    pub view_count: i32,
 }
 
 #[derive(Insertable, AsChangeset)]
@@ -50,6 +56,12 @@ pub struct NewBlog {
     pub title: String,
     pub content: String,
     pub category_id: i32,
+    pub slug: String,
+    pub excerpt: Option<String>,
+    pub thumbnail: Option<String>,
+    pub status: String,
+    pub published_at: Option<NaiveDateTime>,
+    pub view_count: i32,
 }
 
 #[derive(Identifiable, Queryable, Selectable, Associations, Insertable)]

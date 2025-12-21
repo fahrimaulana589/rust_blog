@@ -50,6 +50,9 @@ async fn test_create_blog() {
         content: "Content".to_string(),
         category_id: 1,
         tag_ids: Some(vec![1]),
+        excerpt: None,
+        thumbnail: None,
+        status: None,
     };
 
     let req = test::TestRequest::post()
@@ -101,6 +104,9 @@ async fn test_get_blogs() {
         content: "Content".to_string(),
         category_id: cat_id,
         tag_ids: None,
+        excerpt: None,
+        thumbnail: None,
+        status: None,
     };
     let req = test::TestRequest::post()
         .uri("/app/blogs")
@@ -154,6 +160,9 @@ async fn test_get_blog_by_id() {
         content: "Content".to_string(),
         category_id: cat_id,
         tag_ids: None,
+        excerpt: None,
+        thumbnail: None,
+        status: None,
     };
     let req = test::TestRequest::post()
         .uri("/app/blogs")
@@ -218,6 +227,9 @@ async fn test_update_blog() {
         content: "Content".to_string(),
         category_id: cat_id,
         tag_ids: None,
+        excerpt: None,
+        thumbnail: None,
+        status: None,
     };
     let req = test::TestRequest::post()
         .uri("/app/blogs")
@@ -246,6 +258,9 @@ async fn test_update_blog() {
         content: "Updated Content".to_string(),
         category_id: cat_id,
         tag_ids: None,
+        excerpt: None,
+        thumbnail: None,
+        status: None,
     };
     let req = test::TestRequest::put()
         .uri(&format!("/app/blogs/{}", blog.id))
@@ -297,6 +312,9 @@ async fn test_delete_blog() {
         content: "Content".to_string(),
         category_id: cat_id,
         tag_ids: None,
+        excerpt: None,
+        thumbnail: None,
+        status: None,
     };
     let req = test::TestRequest::post()
         .uri("/app/blogs")
