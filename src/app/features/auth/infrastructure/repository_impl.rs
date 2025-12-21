@@ -1,6 +1,6 @@
 use crate::app::features::auth::domain::entity::User;
 use crate::app::features::auth::domain::repository::UserRepository;
-use crate::schema::users::dsl::*;
+use crate::schema::users;
 use crate::utils::db::DbPool;
 use diesel::prelude::*;
 use diesel::result::QueryResult;
@@ -23,29 +23,21 @@ impl UserRepository for UserRepositoryImpl {
             .pool
             .get()
             .expect("couldn't get db connection from pool");
-        let result = users
-            .filter(crate::schema::users::id.eq(get_id))
-            .first::<User>(&mut conn);
-        match result {
-            Ok(c) => Ok(Some(c)),
-            Err(diesel::result::Error::NotFound) => Ok(None),
-            Err(e) => Err(e),
-        }
+        users::table
+            .filter(users::id.eq(get_id))
+            .first::<User>(&mut conn)
+            .optional()
     }
     fn get_where(&self, name: String, pass: String) -> QueryResult<Option<User>> {
         let mut conn = self
             .pool
             .get()
             .expect("couldn't get db connection from pool");
-        let result = users
-            .filter(crate::schema::users::username.eq(name))
-            .filter(crate::schema::users::password.eq(pass))
-            .first::<User>(&mut conn);
-        match result {
-            Ok(c) => Ok(Some(c)),
-            Err(diesel::result::Error::NotFound) => Ok(None),
-            Err(e) => Err(e),
-        }
+        users::table
+            .filter(users::username.eq(name))
+            .filter(users::password.eq(pass))
+            .first::<User>(&mut conn)
+            .optional()
     }
     fn reset_password(&self, name: String, pass: String) -> QueryResult<User> {
         let mut conn = self
@@ -53,13 +45,12 @@ impl UserRepository for UserRepositoryImpl {
             .get()
             .expect("couldn't get db connection from pool");
 
-        diesel::update(users.filter(crate::schema::users::username.eq(name)))
-            .set(crate::schema::users::password.eq(pass))
+        diesel::update(users::table.filter(users::username.eq(name)))
+            .set(users::password.eq(pass))
             .get_result(&mut conn)
     }
 
     fn create(&self, name: String, mail: String, pass: String) -> QueryResult<User> {
-        use crate::app::features::auth::domain::entity::User;
         let mut conn = self
             .pool
             .get()
@@ -72,7 +63,7 @@ impl UserRepository for UserRepositoryImpl {
             password: pass,
         };
 
-        diesel::insert_into(users)
+        diesel::insert_into(users::table)
             .values(&new_user)
             .get_result(&mut conn)
     }
@@ -82,13 +73,9 @@ impl UserRepository for UserRepositoryImpl {
             .pool
             .get()
             .expect("couldn't get db connection from pool");
-        let result = users
-            .filter(crate::schema::users::email.eq(mail))
-            .first::<User>(&mut conn);
-        match result {
-            Ok(c) => Ok(Some(c)),
-            Err(diesel::result::Error::NotFound) => Ok(None),
-            Err(e) => Err(e),
-        }
+        users::table
+            .filter(users::email.eq(mail))
+            .first::<User>(&mut conn)
+            .optional()
     }
 }
