@@ -93,3 +93,65 @@ src/
 4.  **Application**: Implement Use Cases using Repository Trait.
 5.  **Interface**: Implement Controller to wire DTOs and Use Cases.
 6.  **Wiring**: Add to `Container` in `di.rs` and `routes.rs`.
+7.  **Testing**: Implement Integration Tests in `src/test/` ensuring coverage.
+
+## Testing Standards (MANDATORY)
+
+### 1. Test Categories & Location
+- **Unit Tests**:
+    - **Location**: Inside the source file being tested, in a `mod tests` module annotated with `#[cfg(test)]`.
+    - **Scope**: Individual functions, pure business logic, or complex algorithms without DB access.
+- **Integration Tests**:
+    - **Location**: Strictly in the `src/test/` directory.
+    - **Scope**: Full API endpoint testing (Controller -> UseCase -> DB).
+    - **File Structure**: One file per feature (e.g., `src/test/auth.rs`, `src/test/category.rs`).
+
+### 2. Naming Conventions
+- **Test Functions**: Must use `snake_case` and follow the pattern: `test_[action]_[entity]_[scenario]`.
+    - **Positive Case**: `test_create_category_success`
+    - **Negative Case**: `test_login_invalid_credentials`
+    - **Edge Case**: `test_get_all_blogs_empty_list`
+- **Variables**:
+    - Use `_req` for unused request variables to avoid compiler warnings.
+    - Use descriptive names: `create_dto`, `token`, `response_body`.
+
+### 3. Integration Test Implementation Rules
+- **Initialization**: You **MUST** use the `init_test_app!` macro. Import with `use crate::init_test_app;`.
+- **Concurrency (VITAL)**:
+    - **Problem**: SQLite is file-based and locks during parallel access.
+    - **Solution**: Every integration test **MUST** be annotated with `#[serial]` from the `serial_test` crate.
+    - **Syntax**:
+      ```rust
+      use serial_test::serial;
+      #[actix_web::test]
+      #[serial]
+      async fn test_create_category_success() { ... }
+      ```
+- **Helpers**: Use `src/test/helpers.rs` for shared implementations (`seed_user`, `login_admin`).
+- **Data flows**:
+    - **Request**: Construct using DTOs defined in `interface/dto.rs`.
+    - **Response**: Parse into `SuccessResponse<T>` to validate both the wrapper and the data.
+- **Coverage Requirements**:
+    - **Happy Path**: Verify 200/201 status and correct data return.
+    - **Error Path**: Verify 400/401/404/500 statuses for invalid inputs or states.
+    - **Persistence**: Verify database state changes (e.g., fetch by ID after create).
+
+### 4. Schema Adherence (STRICT)
+- **Goal**: Ensure tests validate the API contract and catch schema regressions.
+- **Rule**: Tests **MUST** use the exact DTO types defined in the Interface Layer.
+- **Requests**:
+    - **FORBIDDEN**: Constructing ad-hoc JSON (e.g., `json!({"name": "foo"})`).
+    - **REQUIRED**: Instantiate the Request DTO struct (e.g., `CreateCategoryRequestDto { name: "foo".to_string() }`).
+- **Responses**:
+    - **FORBIDDEN**: Parsing into generic `serde_json::Value`.
+    - **REQUIRED**: Parse into the concrete Response DTO (e.g., `SuccessResponse<CategoryResponseDto>`).
+    - **Assertions**: Perform assertions on the specific fields of the deserialized DTO (e.g., `assert_eq!(resp.data.unwrap().name, "expected")`).
+
+### 5. Flow & Scenario Testing (MANDATORY)
+- **Goal**: Verify complete business processes where state persists across multiple requests.
+- **Requirement**: For multi-step features, implements a single, sequential test function covering the entire lifecycle.
+- **Example: Forgot Password Flow**:
+    - **Step 1**: User requests password reset (Verify response).
+    - **Step 2**: User submits new password with token (Verify strict schema validation on input/output).
+    - **Step 3**: User logs in with `new_password` (Verify login success and token retrieval).
+- **State Validation**: You **MUST** ensure that the output/side-effect of Step N (e.g., a generated token or DB change) is the direct input or precondition for Step N+1. Use the actual data returned by the API where possible.
