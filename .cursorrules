@@ -1,0 +1,95 @@
+# Project Rules and Standards
+
+## Tech Stack
+- **Language**: Rust (Edition 2024)
+- **Framework**: Actix Web 4
+- **Database**: SQLite
+- **ORM**: Diesel 2.2 with r2d2 connection pooling
+- **Validation**: validator 0.20
+- **Serialization**: serde 1.0
+- **Async Runtime**: Tokio (via Actix)
+
+## Architecture
+The project follows a strict **Clean Architecture** pattern suitable for Rust web services.
+
+### Directory Structure
+```
+src/
+  app/
+    features/
+      [feature_name]/
+        interface/       # Controllers, DTOs, Presenters
+        application/     # Use Cases (Business Logic)
+        domain/          # Entities, Repository Traits
+        infrastructure/  # Repository Implementations
+    drivers/             # Framework drivers (routes, middlewares)
+  utils/                 # Shared utilities (DI container, error handling)
+  config/                # App configuration
+  schema.rs              # Diesel schema
+```
+
+### Layer Responsibilities
+
+1. **Interface Layer (`interface/`)**
+   - **Controllers**: Handle HTTP requests, validate input, call Use Cases, and return Responses.
+   - **DTOs**: Define data ownership for Requests (`...RequestDto`) and Responses (`...ResponseDto`).
+   - **Validation**: Explicitly trigger `.validate()` on DTOs.
+   - **Response**: Use `impl Responder`. Map success with `crate::utils::success_response` and errors with `crate::utils::error_response`.
+
+2. **Application Layer (`application/`)**
+   - **Use Cases**: Contains business logic.
+   - **Grouping**:
+     - **Multiple Entities**: If a feature manages multiple entities (e.g., Blog has Category, Tag), create separate modules named `[entity]_usecase` (e.g., `application/category_usecase/`).
+     - **Single Entity/Simple**: If the feature is simple (e.g., Auth), a flat `application/usecase/` structure is acceptable.
+   - **Structure**: Each Use Case is a struct named `Execute` (or specific name if needed) with a `new` constructor and an `execute` async method.
+   - **Input**: Accepts Request DTOs (e.g., `CreateCategoryRequestDto`) or primitive types.
+   - **Output**: Returns `Result<T, String>`.
+   - **Dependencies**: Injects Repository Traits.
+
+3. **Domain Layer (`domain/`)**
+   - **Entities**: Diesel structs (`Queryable`, `Insertable`, etc.). make fields `pub`.
+   - **Repositories**: Traits defining database operations. Methods return `diesel::QueryResult`.
+
+4. **Infrastructure Layer (`infrastructure/`)**
+   - **Repository Implementation**: Implements Domain Repository Traits using Diesel DSL.
+   - **Database Access**: Uses `DbPool` injected in constructor.
+
+## Naming Conventions
+- **Feature Modules**: `snake_case` (e.g., `blog`, `auth`).
+- **DTOs**:
+    - Request: `[Action][Entity]RequestDto` (e.g., `CreateCategoryRequestDto`)
+    - Response: `[Entity]ResponseDto` (e.g., `CategoryResponseDto`)
+- **Use Cases**:
+    - Complex: `[entity]_usecase::[action]::Execute` (e.g., `category_usecase::create::Execute`).
+    - Simple: `usecase::[action]::Execute`.
+- **Repositories**:
+    - Trait: `[Entity]Repository` (e.g., `BlogRepository`)
+    - Impl: `[Entity]RepositoryImpl` (e.g., `BlogRepositoryImpl`)
+
+## Coding Standards
+
+### Error Handling
+- **Repositories**: Return `QueryResult<T>`. Do not verify logic here, just DB ops.
+- **Use Cases**: Return `Result<T, String>`. Map DB errors to `String` using `.map_err(|e| e.to_string())`.
+- **Controllers**:
+    - Validation Errors: `HttpResponse::BadRequest().json(map_validation_error(e))`
+    - Logic/System Errors: `HttpResponse::InternalServerError().json(map_string_error(e))`
+    - Not Found: Check error string content (e.g., `if e.contains("not found")`) and return `NotFound`.
+
+### Dependency Injection
+- Manual DI via `crate::utils::di::Container` struct.
+- Register new Use Cases in `Container` struct.
+- Initialize them in `Container::new()`.
+- Inject `web::Data<Container>` into Controllers.
+
+### Routing
+- Register services in `src/app/drivers/routes.rs`.
+- Group feature routes appropriately (e.g., under `/app` scope).
+
+## Workflow for New Features
+1.  **Domain**: Define Entities and Repository Trait.
+2.  **Infrastructure**: Implement Repository Trait.
+3.  **Interface**: Define Request/Response DTOs with Validation.
+4.  **Application**: Implement Use Cases using Repository Trait.
+5.  **Interface**: Implement Controller to wire DTOs and Use Cases.
+6.  **Wiring**: Add to `Container` in `di.rs` and `routes.rs`.
