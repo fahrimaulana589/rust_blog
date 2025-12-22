@@ -1,5 +1,9 @@
 # Project Rules and Standards
 
+## Language Preference
+- **Language**: Indonesian (Bahasa Indonesia) - Always reply in Indonesian unless explicitly asked otherwise.
+
+
 ## Tech Stack
 - **Language**: Rust (Edition 2024)
 - **Framework**: Actix Web 4
