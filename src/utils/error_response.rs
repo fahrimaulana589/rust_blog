@@ -1,8 +1,9 @@
 use serde::Serialize;
 use std::collections::HashMap;
+use utoipa::ToSchema;
 use validator::ValidationErrors;
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct ErrorResponse {
     pub message: String,
     pub errors: Option<HashMap<String, String>>, // Field -> Message

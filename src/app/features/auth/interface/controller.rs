@@ -1,14 +1,24 @@
 use crate::app::features::auth::interface::dto::{
-    ForgotPasswordRequestDto, LoginRequestDto, ResetPasswordRequestDto,
+    ForgotPasswordRequestDto, LoginRequestDto, LoginResponseDto, ResetPasswordRequestDto,
 };
 use actix_web::{HttpResponse, Responder, post, web};
 
 use validator::Validate;
 
 use crate::utils::di::Container;
-use crate::utils::error_response::{map_string_error, map_validation_error};
+use crate::utils::error_response::{ErrorResponse, map_string_error, map_validation_error};
 use crate::utils::success_response::{map_success_response, map_success_with_data};
 
+#[utoipa::path(
+    path = "/login",
+    tag = "Auth",
+    request_body = LoginRequestDto,
+    responses(
+        (status = 200, description = "Login successful", body = crate::utils::success_response::SuccessResponse<LoginResponseDto>),
+        (status = 400, description = "Validation error", body = ErrorResponse),
+        (status = 500, description = "Internal server error")
+    )
+)]
 #[post("/login")]
 async fn login(
     container: web::Data<Container>,
@@ -28,6 +38,16 @@ async fn login(
     }
 }
 
+#[utoipa::path(
+    path = "/forgot-password",
+    tag = "Auth",
+    request_body = ForgotPasswordRequestDto,
+    responses(
+        (status = 200, description = "Email sent", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>),
+        (status = 400, description = "Validation error", body = ErrorResponse),
+        (status = 500, description = "Internal server error")
+    )
+)]
 #[post("/forgot-password")]
 async fn forgot_password(
     container: web::Data<Container>,
@@ -45,6 +65,16 @@ async fn forgot_password(
     }
 }
 
+#[utoipa::path(
+    path = "/reset-password",
+    tag = "Auth",
+    request_body = ResetPasswordRequestDto,
+    responses(
+        (status = 200, description = "Password reset successful", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>),
+        (status = 400, description = "Validation error", body = ErrorResponse),
+        (status = 500, description = "Internal server error")
+    )
+)]
 #[post("/reset-password")]
 async fn reset_password(
     container: web::Data<Container>,

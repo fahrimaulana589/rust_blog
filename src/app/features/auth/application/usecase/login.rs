@@ -1,5 +1,5 @@
 use crate::app::features::auth::domain::repository::UserRepository;
-use crate::app::features::auth::interface::dto::UserResponseDto;
+use crate::app::features::auth::interface::dto::LoginResponseDto;
 use crate::config::Config;
 use std::sync::Arc;
 
@@ -17,7 +17,7 @@ impl Execute {
         }
     }
 
-    pub fn execute(&self, username: String, password: String) -> Result<UserResponseDto, String> {
+    pub fn execute(&self, username: String, password: String) -> Result<LoginResponseDto, String> {
         // Check if user with ID 1 exists
         if let Ok(None) = self.user_repository.get(&1) {
             // Default user not found, create it
@@ -33,7 +33,7 @@ impl Execute {
             Ok(Some(user)) => {
                 let token =
                     crate::utils::token::create_token(&user.username, &self.config.jwt_secret);
-                Ok(UserResponseDto::from(user, token))
+                Ok(LoginResponseDto::from(user, token))
             }
             Ok(None) => Err("User not found".to_string()),
             Err(e) => Err(e.to_string()),

@@ -1,13 +1,27 @@
 use crate::app::features::projects::interface::dto::{
-    CreateProjectRequestDto, CreateStackRequestDto, PaginationRequestDto, UpdateProjectRequestDto,
+    CreateProjectRequestDto, CreateStackRequestDto, PaginationRequestDto, ProjectResponseDto,
+    StackResponseDto, UpdateProjectRequestDto, UpdateStackRequestDto,
 };
 use crate::utils::di::Container;
-use crate::utils::{error_response::map_validation_error, success_response::SuccessResponse};
+use crate::utils::{
+    error_response::{ErrorResponse, map_validation_error},
+    success_response::SuccessResponse,
+};
 use actix_web::{HttpResponse, Responder, delete, get, post, put, web};
 use validator::Validate;
 
 // --- Projects ---
 
+#[utoipa::path(
+    path = "/app/projects",
+    tag = "Projects",
+    request_body = CreateProjectRequestDto,
+    responses(
+        (status = 201, description = "Project created", body = crate::utils::success_response::SuccessResponse<ProjectResponseDto>),
+        (status = 400, description = "Validation error", body = ErrorResponse),
+        (status = 500, description = "Internal server error")
+    )
+)]
 #[post("/projects")]
 pub async fn create_project(
     data: web::Data<Container>,
@@ -27,6 +41,14 @@ pub async fn create_project(
     }
 }
 
+#[utoipa::path(
+    path = "/app/projects",
+    tag = "Projects",
+    responses(
+        (status = 200, description = "List projects", body = crate::utils::success_response::SuccessResponse<crate::app::features::projects::interface::dto::PaginatedResponseDto<ProjectResponseDto>>),
+        (status = 500, description = "Internal server error")
+    )
+)]
 #[get("/projects")]
 pub async fn get_all_projects(
     data: web::Data<Container>,
@@ -45,6 +67,18 @@ pub async fn get_all_projects(
     }
 }
 
+#[utoipa::path(
+    path = "/app/projects/{id}",
+    tag = "Projects",
+    params(
+        ("id", description = "Project ID")
+    ),
+    responses(
+        (status = 200, description = "Project found", body = crate::utils::success_response::SuccessResponse<ProjectResponseDto>),
+        (status = 404, description = "Project not found", body = ErrorResponse),
+        (status = 500, description = "Internal server error")
+    )
+)]
 #[get("/projects/{id}")]
 pub async fn get_project(data: web::Data<Container>, path: web::Path<i32>) -> impl Responder {
     let id = path.into_inner();
@@ -64,6 +98,19 @@ pub async fn get_project(data: web::Data<Container>, path: web::Path<i32>) -> im
     }
 }
 
+#[utoipa::path(
+    path = "/app/projects/{id}",
+    tag = "Projects",
+    params(
+        ("id", description = "Project ID")
+    ),
+    request_body = UpdateProjectRequestDto,
+    responses(
+        (status = 200, description = "Project updated", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>),
+        (status = 400, description = "Validation error", body = ErrorResponse),
+        (status = 500, description = "Internal server error")
+    )
+)]
 #[put("/projects/{id}")]
 pub async fn update_project(
     data: web::Data<Container>,
@@ -94,6 +141,18 @@ pub async fn update_project(
     }
 }
 
+#[utoipa::path(
+    path = "/app/projects/{id}",
+    tag = "Projects",
+    params(
+        ("id", description = "Project ID")
+    ),
+    responses(
+        (status = 200, description = "Project deleted", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>),
+        (status = 404, description = "Project not found", body = ErrorResponse),
+        (status = 500, description = "Internal server error")
+    )
+)]
 #[delete("/projects/{id}")]
 pub async fn delete_project(data: web::Data<Container>, path: web::Path<i32>) -> impl Responder {
     let id = path.into_inner();
@@ -115,6 +174,16 @@ pub async fn delete_project(data: web::Data<Container>, path: web::Path<i32>) ->
 
 // --- Stacks ---
 
+#[utoipa::path(
+    path = "/app/stacks",
+    tag = "Stacks",
+    request_body = CreateStackRequestDto,
+    responses(
+        (status = 201, description = "Stack created", body = crate::utils::success_response::SuccessResponse<StackResponseDto>),
+        (status = 400, description = "Validation error", body = ErrorResponse),
+        (status = 500, description = "Internal server error")
+    )
+)]
 #[post("/stacks")]
 pub async fn create_stack(
     data: web::Data<Container>,
@@ -134,6 +203,14 @@ pub async fn create_stack(
     }
 }
 
+#[utoipa::path(
+    path = "/app/stacks",
+    tag = "Stacks",
+    responses(
+        (status = 200, description = "List stacks", body = crate::utils::success_response::SuccessResponse<Vec<StackResponseDto>>),
+        (status = 500, description = "Internal server error")
+    )
+)]
 #[get("/stacks")]
 pub async fn get_all_stacks(data: web::Data<Container>) -> impl Responder {
     match data.get_all_stacks_usecase.execute() {
@@ -146,6 +223,18 @@ pub async fn get_all_stacks(data: web::Data<Container>) -> impl Responder {
     }
 }
 
+#[utoipa::path(
+    path = "/app/stacks/{id}",
+    tag = "Stacks",
+    params(
+        ("id", description = "Stack ID")
+    ),
+    responses(
+        (status = 200, description = "Stack found", body = crate::utils::success_response::SuccessResponse<StackResponseDto>),
+        (status = 404, description = "Stack not found", body = ErrorResponse),
+        (status = 500, description = "Internal server error")
+    )
+)]
 #[get("/stacks/{id}")]
 pub async fn get_stack(data: web::Data<Container>, path: web::Path<i32>) -> impl Responder {
     let id = path.into_inner();
@@ -165,6 +254,19 @@ pub async fn get_stack(data: web::Data<Container>, path: web::Path<i32>) -> impl
     }
 }
 
+#[utoipa::path(
+    path = "/app/stacks/{id}",
+    tag = "Stacks",
+    params(
+        ("id", description = "Stack ID")
+    ),
+    request_body = UpdateStackRequestDto, // This is technically from another module but generic name works if imported? Ah, need import or full path? Using `UpdateStackRequestDto` from import
+    responses(
+        (status = 200, description = "Stack updated", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>),
+        (status = 400, description = "Validation error", body = ErrorResponse),
+        (status = 500, description = "Internal server error")
+    )
+)]
 #[put("/stacks/{id}")]
 pub async fn update_stack(
     data: web::Data<Container>,
@@ -192,6 +294,18 @@ pub async fn update_stack(
     }
 }
 
+#[utoipa::path(
+    path = "/app/stacks/{id}",
+    tag = "Stacks",
+    params(
+        ("id", description = "Stack ID")
+    ),
+    responses(
+        (status = 200, description = "Stack deleted", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>),
+        (status = 404, description = "Stack not found", body = ErrorResponse),
+        (status = 500, description = "Internal server error")
+    )
+)]
 #[delete("/stacks/{id}")]
 pub async fn delete_stack(data: web::Data<Container>, path: web::Path<i32>) -> impl Responder {
     let id = path.into_inner();

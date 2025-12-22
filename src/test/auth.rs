@@ -1,5 +1,5 @@
 use crate::app::features::auth::interface::dto::{
-    ForgotPasswordRequestDto, LoginRequestDto, ResetPasswordRequestDto, UserResponseDto,
+    ForgotPasswordRequestDto, LoginRequestDto, LoginResponseDto, ResetPasswordRequestDto,
 };
 use crate::init_test_app;
 use crate::test::helpers::seed_user;
@@ -25,7 +25,7 @@ async fn test_login() {
         .set_json(&login_dto)
         .to_request();
 
-    let resp: SuccessResponse<UserResponseDto> = test::call_and_read_body_json(&app, req).await;
+    let resp: SuccessResponse<LoginResponseDto> = test::call_and_read_body_json(&app, req).await;
     assert!(resp.data.is_some());
     assert_eq!(
         resp.data.unwrap().username,
@@ -93,7 +93,7 @@ async fn test_forgot_password_flow() {
         .set_json(&login_dto)
         .to_request();
 
-    let resp: SuccessResponse<UserResponseDto> = test::call_and_read_body_json(&app, req).await;
+    let resp: SuccessResponse<LoginResponseDto> = test::call_and_read_body_json(&app, req).await;
     assert!(resp.data.is_some());
 
     // Cleanup: Reset password back to default
@@ -160,6 +160,6 @@ async fn test_reset_password() {
         .uri("/login")
         .set_json(&login_dto)
         .to_request();
-    let resp: SuccessResponse<UserResponseDto> = test::call_and_read_body_json(&app, req).await;
+    let resp: SuccessResponse<LoginResponseDto> = test::call_and_read_body_json(&app, req).await;
     assert!(resp.data.is_some());
 }

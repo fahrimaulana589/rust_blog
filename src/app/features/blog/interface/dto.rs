@@ -1,19 +1,20 @@
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use validator::Validate;
 
-#[derive(Deserialize, Serialize, Validate)]
+#[derive(Deserialize, Serialize, Validate, ToSchema)]
 pub struct CreateCategoryRequestDto {
     #[validate(length(min = 1, message = "Name is required"))]
     pub name: String,
 }
 
-#[derive(Deserialize, Serialize, Validate)]
+#[derive(Deserialize, Serialize, Validate, ToSchema)]
 pub struct UpdateCategoryRequestDto {
     #[validate(length(min = 1, message = "Name is required"))]
     pub name: Option<String>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, ToSchema)]
 pub struct CategoryResponseDto {
     pub id: i32,
     pub name: String,
@@ -21,19 +22,19 @@ pub struct CategoryResponseDto {
     pub updated_at: String,
 }
 
-#[derive(Deserialize, Serialize, Validate)]
+#[derive(Deserialize, Serialize, Validate, ToSchema)]
 pub struct CreateTagRequestDto {
     #[validate(length(min = 1, message = "Name is required"))]
     pub name: String,
 }
 
-#[derive(Deserialize, Serialize, Validate)]
+#[derive(Deserialize, Serialize, Validate, ToSchema)]
 pub struct UpdateTagRequestDto {
     #[validate(length(min = 1, message = "Name is required"))]
     pub name: Option<String>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, ToSchema)]
 pub struct TagResponseDto {
     pub id: i32,
     pub name: String,
@@ -41,7 +42,7 @@ pub struct TagResponseDto {
     pub updated_at: String,
 }
 
-#[derive(Deserialize, Serialize, Validate)]
+#[derive(Deserialize, Serialize, Validate, ToSchema)]
 pub struct CreateBlogRequestDto {
     #[validate(length(min = 1, message = "Title is required"))]
     pub title: String,
@@ -54,7 +55,7 @@ pub struct CreateBlogRequestDto {
     pub status: Option<String>, // "DRAFT" or "PUBLISHED"
 }
 
-#[derive(Deserialize, Serialize, Validate)]
+#[derive(Deserialize, Serialize, Validate, ToSchema)]
 pub struct UpdateBlogRequestDto {
     #[validate(length(min = 1, message = "Title is required"))]
     pub title: Option<String>,
@@ -67,7 +68,7 @@ pub struct UpdateBlogRequestDto {
     pub status: Option<String>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, ToSchema)]
 pub struct BlogResponseDto {
     pub id: i32,
     pub title: String,

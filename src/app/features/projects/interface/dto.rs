@@ -1,31 +1,32 @@
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use validator::Validate;
 
-#[derive(Deserialize, Serialize, Validate)]
+#[derive(Deserialize, Serialize, Validate, ToSchema)]
 pub struct CreateStackRequestDto {
     #[validate(length(min = 1, message = "Nama stack is required"))]
     pub nama_stack: String,
 }
 
-#[derive(Deserialize, Serialize, Validate)]
+#[derive(Deserialize, Serialize, Validate, ToSchema)]
 pub struct UpdateStackRequestDto {
     #[validate(length(min = 1, message = "Nama stack is required"))]
     pub nama_stack: String,
 }
 
-#[derive(Deserialize, Serialize, Validate)]
+#[derive(Deserialize, Serialize, Validate, ToSchema)]
 pub struct PaginationRequestDto {
     pub page: Option<i64>,
     pub per_page: Option<i64>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, ToSchema)]
 pub struct StackResponseDto {
     pub id: i32,
     pub nama_stack: String,
 }
 
-#[derive(Deserialize, Serialize, Validate)]
+#[derive(Deserialize, Serialize, Validate, ToSchema)]
 pub struct CreateProjectRequestDto {
     #[validate(length(min = 1, message = "Nama projek is required"))]
     pub nama_projek: String,
@@ -41,7 +42,7 @@ pub struct CreateProjectRequestDto {
     pub stack_ids: Option<Vec<i32>>,
 }
 
-#[derive(Deserialize, Serialize, Validate)]
+#[derive(Deserialize, Serialize, Validate, ToSchema)]
 pub struct UpdateProjectRequestDto {
     pub nama_projek: Option<String>,
     pub deskripsi: Option<String>,
@@ -66,7 +67,7 @@ fn validate_status_opt(status: &str) -> Result<(), validator::ValidationError> {
     validate_status(status)
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, ToSchema)]
 pub struct MetaDto {
     pub page: i64,
     pub per_page: i64,
@@ -74,13 +75,13 @@ pub struct MetaDto {
     pub total_items: i64,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, ToSchema)]
 pub struct PaginatedResponseDto<T> {
     pub items: Vec<T>,
     pub meta: MetaDto,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, ToSchema)]
 pub struct ProjectResponseDto {
     pub id: i32,
     pub nama_projek: String,

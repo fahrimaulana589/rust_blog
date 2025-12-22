@@ -180,3 +180,32 @@ src/
     - **Step 2**: User submits new password with token (Verify strict schema validation on input/output).
     - **Step 3**: User logs in with `new_password` (Verify login success and token retrieval).
 - **State Validation**: You **MUST** ensure that the output/side-effect of Step N (e.g., a generated token or DB change) is the direct input or precondition for Step N+1. Use the actual data returned by the API where possible.
+
+## OpenAPI / Swagger UI Standards (MANDATORY)
+
+### 1. Library & Configuration
+- **Library**: `utoipa` and `utoipa-swagger-ui`.
+- **Definition**: The central `ApiDoc` struct is located in `src/app/drivers/openapi.rs`.
+- **Derive**: `#[derive(OpenApi)]` should appear ONLY on `ApiDoc`.
+
+### 2. DTOs
+- **Trait**: All Request and Response DTOs **MUST** derive `ToSchema`.
+- **Location**: `interface/dto.rs` files.
+- **Generic Types**: If a DTO is generic (like `PaginatedResponseDto<T>`), ensure `T` also implements `ToSchema`.
+
+### 3. Controllers
+- **Annotation**: Every public endpoint function **MUST** be annotated with `#[utoipa::path(...)]`.
+- **Resolution**:
+    - Use **Fully Qualified Paths** for types in `responses(...)` to avoid macro resolution failures (e.g., `body = crate::utils::success_response::SuccessResponse<crate::features::auth::dto::LoginResponseDto>`).
+    - **Empty Responses**: Use `crate::utils::success_response::Empty` instead of `()` or `Option<()>` for `SuccessResponse` generics (e.g., `SuccessResponse<Empty>`). `utoipa` does not handle unit types well in generics.
+- **Request Body**: Specify providing `request_body = DtoName`.
+- **Responses**: Define at least `200` (Success), `400` (Bad Request/Validation), and `500` (Server Error).
+
+### 4. Security
+- **Scheme**: JWT Bearer Auth is configured globally.
+- **Apply**: The `ApiDoc` struct must include `security(("jwt" = []))` in the `#[openapi(...)]` macro to enable the "Authorize" button globally.
+- **Addon**: Security scheme details are defined in `SecurityAddon` struct in `openapi.rs`.
+
+### 5. Access
+- **Route**: Swagger UI is accessible at `/swagger-ui/`.
+- **JSON**: The OpenAPI schema is served at `/api-docs/openapi.json`.

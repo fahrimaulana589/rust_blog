@@ -1,6 +1,6 @@
 use crate::app::features::auth::domain::repository::UserRepository;
 use crate::app::features::auth::infrastructure::repository_impl::UserRepositoryImpl;
-use crate::app::features::auth::interface::dto::{LoginRequestDto, UserResponseDto};
+use crate::app::features::auth::interface::dto::{LoginRequestDto, LoginResponseDto};
 use crate::utils::db::establish_connection;
 use crate::utils::di::Container;
 use crate::utils::success_response::SuccessResponse;
@@ -51,6 +51,6 @@ pub async fn login_admin(
         .set_json(&login_dto)
         .to_request();
 
-    let resp: SuccessResponse<UserResponseDto> = test::call_and_read_body_json(app, req).await;
+    let resp: SuccessResponse<LoginResponseDto> = test::call_and_read_body_json(app, req).await;
     resp.data.expect("Login failed during test setup").token
 }
