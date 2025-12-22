@@ -11,6 +11,10 @@ use crate::app::features::blog::infrastructure::repository_impl::BlogRepositoryI
 use crate::app::features::home::domain::repository::CountRepository;
 
 use crate::app::features::home::infrastructure::repository_impl::CountRepositoryImpl;
+use crate::app::features::projects::application::project_usecase;
+use crate::app::features::projects::application::stack_usecase;
+use crate::app::features::projects::domain::repository::ProjectRepository;
+use crate::app::features::projects::infrastructure::repository_impl::ProjectRepositoryImpl;
 use crate::config::Config;
 use crate::utils::db::establish_connection;
 use crate::utils::email::Email;
@@ -39,6 +43,16 @@ pub struct Container {
     pub get_blog_usecase: blog_usecase::get::Execute,
     pub update_blog_usecase: blog_usecase::update::Execute,
     pub delete_blog_usecase: blog_usecase::delete::Execute,
+    pub create_project_usecase: project_usecase::create::Execute,
+    pub get_all_projects_usecase: project_usecase::get_all::Execute,
+    pub get_project_usecase: project_usecase::get::Execute,
+    pub update_project_usecase: project_usecase::update::Execute,
+    pub delete_project_usecase: project_usecase::delete::Execute,
+    pub create_stack_usecase: stack_usecase::create::Execute,
+    pub get_all_stacks_usecase: stack_usecase::get_all::Execute,
+    pub get_stack_usecase: stack_usecase::get::Execute,
+    pub update_stack_usecase: stack_usecase::update::Execute,
+    pub delete_stack_usecase: stack_usecase::delete::Execute,
 }
 
 impl Container {
@@ -88,6 +102,26 @@ impl Container {
         let update_blog_usecase = blog_usecase::update::Execute::new(blog_repository.clone());
         let delete_blog_usecase = blog_usecase::delete::Execute::new(blog_repository.clone());
 
+        let project_repository: Arc<dyn ProjectRepository + Send + Sync> =
+            Arc::new(ProjectRepositoryImpl::new(pool.clone()));
+
+        let create_project_usecase =
+            project_usecase::create::Execute::new(project_repository.clone());
+        let get_all_projects_usecase =
+            project_usecase::get_all::Execute::new(project_repository.clone());
+        let get_project_usecase = project_usecase::get::Execute::new(project_repository.clone());
+        let update_project_usecase =
+            project_usecase::update::Execute::new(project_repository.clone());
+        let delete_project_usecase =
+            project_usecase::delete::Execute::new(project_repository.clone());
+
+        let create_stack_usecase = stack_usecase::create::Execute::new(project_repository.clone());
+        let get_all_stacks_usecase =
+            stack_usecase::get_all::Execute::new(project_repository.clone());
+        let get_stack_usecase = stack_usecase::get::Execute::new(project_repository.clone());
+        let update_stack_usecase = stack_usecase::update::Execute::new(project_repository.clone());
+        let delete_stack_usecase = stack_usecase::delete::Execute::new(project_repository.clone());
+
         Self {
             config,
             count_usecase,
@@ -110,6 +144,16 @@ impl Container {
             get_blog_usecase,
             update_blog_usecase,
             delete_blog_usecase,
+            create_project_usecase,
+            get_all_projects_usecase,
+            get_project_usecase,
+            update_project_usecase,
+            delete_project_usecase,
+            create_stack_usecase,
+            get_all_stacks_usecase,
+            get_stack_usecase,
+            update_stack_usecase,
+            delete_stack_usecase,
         }
     }
 }

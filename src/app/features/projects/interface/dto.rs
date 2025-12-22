@@ -1,0 +1,97 @@
+use serde::{Deserialize, Serialize};
+use validator::Validate;
+
+#[derive(Deserialize, Serialize, Validate)]
+pub struct CreateStackRequestDto {
+    #[validate(length(min = 1, message = "Nama stack is required"))]
+    pub nama_stack: String,
+}
+
+#[derive(Deserialize, Serialize, Validate)]
+pub struct UpdateStackRequestDto {
+    #[validate(length(min = 1, message = "Nama stack is required"))]
+    pub nama_stack: String,
+}
+
+#[derive(Deserialize, Serialize, Validate)]
+pub struct PaginationRequestDto {
+    pub page: Option<i64>,
+    pub per_page: Option<i64>,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct StackResponseDto {
+    pub id: i32,
+    pub nama_stack: String,
+}
+
+#[derive(Deserialize, Serialize, Validate)]
+pub struct CreateProjectRequestDto {
+    #[validate(length(min = 1, message = "Nama projek is required"))]
+    pub nama_projek: String,
+    #[validate(length(min = 1, message = "Deskripsi is required"))]
+    pub deskripsi: String,
+    #[validate(custom(function = "validate_status"))]
+    pub status: String, // draft, ongoing, completed
+    pub progress: i32,
+    pub link_demo: Option<String>,
+    pub repository: Option<String>,
+    pub tanggal_mulai: String,           // YYYY-MM-DD
+    pub tanggal_selesai: Option<String>, // YYYY-MM-DD
+    pub stack_ids: Option<Vec<i32>>,
+}
+
+#[derive(Deserialize, Serialize, Validate)]
+pub struct UpdateProjectRequestDto {
+    pub nama_projek: Option<String>,
+    pub deskripsi: Option<String>,
+    #[validate(custom(function = "validate_status_opt"))]
+    pub status: Option<String>,
+    pub progress: Option<i32>,
+    pub link_demo: Option<String>,
+    pub repository: Option<String>,
+    pub tanggal_mulai: Option<String>,
+    pub tanggal_selesai: Option<String>,
+    pub stack_ids: Option<Vec<i32>>,
+}
+
+fn validate_status(status: &str) -> Result<(), validator::ValidationError> {
+    match status {
+        "draft" | "ongoing" | "completed" => Ok(()),
+        _ => Err(validator::ValidationError::new("Invalid status")),
+    }
+}
+
+fn validate_status_opt(status: &str) -> Result<(), validator::ValidationError> {
+    validate_status(status)
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct MetaDto {
+    pub page: i64,
+    pub per_page: i64,
+    pub total_pages: i64,
+    pub total_items: i64,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct PaginatedResponseDto<T> {
+    pub items: Vec<T>,
+    pub meta: MetaDto,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct ProjectResponseDto {
+    pub id: i32,
+    pub nama_projek: String,
+    pub deskripsi: String,
+    pub status: String,
+    pub progress: i32,
+    pub link_demo: Option<String>,
+    pub repository: Option<String>,
+    pub tanggal_mulai: String,
+    pub tanggal_selesai: Option<String>,
+    pub stacks: Vec<StackResponseDto>,
+    pub created_at: String,
+    pub updated_at: String,
+}

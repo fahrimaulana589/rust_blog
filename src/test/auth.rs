@@ -106,3 +106,60 @@ async fn test_forgot_password_flow() {
         container.config.default_password,
     );
 }
+
+#[actix_web::test]
+#[serial]
+async fn test_forgot_password() {
+    let container = Container::new();
+    seed_user(&container);
+    let app = init_test_app!(&container);
+
+    let forgot_dto = ForgotPasswordRequestDto {
+        email: container.config.default_email.clone(),
+    };
+
+    let req = test::TestRequest::post()
+        .uri("/forgot-password")
+        .set_json(&forgot_dto)
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success());
+}
+
+#[actix_web::test]
+#[serial]
+async fn test_reset_password() {
+    let container = Container::new();
+    seed_user(&container);
+    let app = init_test_app!(&container);
+
+    // Manually generate token to isolate this test from forgot-password logic
+    let token = crate::utils::token::create_token(
+        &container.config.default_username,
+        &container.config.jwt_secret,
+    );
+
+    let reset_dto = ResetPasswordRequestDto {
+        token,
+        new_password: "NewProPass123!".to_string(),
+    };
+
+    let req = test::TestRequest::post()
+        .uri("/reset-password")
+        .set_json(&reset_dto)
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success());
+
+    // Verify login with new password
+    let login_dto = LoginRequestDto {
+        username: container.config.default_username.clone(),
+        password: "NewProPass123!".to_string(),
+    };
+    let req = test::TestRequest::post()
+        .uri("/login")
+        .set_json(&login_dto)
+        .to_request();
+    let resp: SuccessResponse<UserResponseDto> = test::call_and_read_body_json(&app, req).await;
+    assert!(resp.data.is_some());
+}
