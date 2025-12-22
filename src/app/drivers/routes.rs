@@ -37,7 +37,12 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
             .service(app::features::projects::interface::controller::get_all_stacks)
             .service(app::features::projects::interface::controller::get_stack)
             .service(app::features::projects::interface::controller::update_stack)
-            .service(app::features::projects::interface::controller::delete_stack),
+            .service(app::features::projects::interface::controller::delete_stack)
+            .service(app::features::portfolio::interface::controller::create_portfolio)
+            .service(app::features::portfolio::interface::controller::get_all_portfolios)
+            .service(app::features::portfolio::interface::controller::get_portfolio)
+            .service(app::features::portfolio::interface::controller::update_portfolio)
+            .service(app::features::portfolio::interface::controller::delete_portfolio),
     )
     .service(app::features::auth::interface::controller::login)
     .service(app::features::auth::interface::controller::forgot_password)

@@ -3,7 +3,8 @@ use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
 // --- Project ---
-#[derive(Queryable, Serialize, Deserialize, Debug, Clone)]
+#[derive(Queryable, Selectable, Identifiable, Serialize, Deserialize, Debug, Clone)]
+#[diesel(table_name = projects)]
 pub struct Project {
     pub id: i32,
     pub nama_projek: String,
@@ -32,7 +33,8 @@ pub struct NewProject {
 }
 
 // --- Stack ---
-#[derive(Queryable, Serialize, Deserialize, Debug, Clone)]
+#[derive(Queryable, Selectable, Identifiable, Serialize, Deserialize, Debug, Clone)]
+#[diesel(table_name = stacks)]
 pub struct Stack {
     pub id: i32,
     pub nama_stack: String,

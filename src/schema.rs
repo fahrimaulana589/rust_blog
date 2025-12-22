@@ -41,6 +41,18 @@ diesel::table! {
 }
 
 diesel::table! {
+    portfolios (id) {
+        id -> Integer,
+        project_id -> Integer,
+        judul -> Text,
+        deskripsi -> Nullable<Text>,
+        is_active -> Bool,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     project_stack (id) {
         id -> Integer,
         project_id -> Integer,
@@ -94,6 +106,7 @@ diesel::table! {
 diesel::joinable!(blog -> categories (category_id));
 diesel::joinable!(blog_tags -> blog (blog_id));
 diesel::joinable!(blog_tags -> tags (tag_id));
+diesel::joinable!(portfolios -> projects (project_id));
 diesel::joinable!(project_stack -> projects (project_id));
 diesel::joinable!(project_stack -> stacks (stack_id));
 
@@ -102,6 +115,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     blog_tags,
     categories,
     counts,
+    portfolios,
     project_stack,
     projects,
     stacks,

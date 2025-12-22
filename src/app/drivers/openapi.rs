@@ -43,6 +43,12 @@ use utoipa::{
         crate::app::features::projects::interface::controller::get_stack,
         crate::app::features::projects::interface::controller::update_stack,
         crate::app::features::projects::interface::controller::delete_stack,
+        // Portfolios
+        crate::app::features::portfolio::interface::controller::create_portfolio,
+        crate::app::features::portfolio::interface::controller::get_all_portfolios,
+        crate::app::features::portfolio::interface::controller::get_portfolio,
+        crate::app::features::portfolio::interface::controller::update_portfolio,
+        crate::app::features::portfolio::interface::controller::delete_portfolio,
     ),
     components(
         schemas(
@@ -66,7 +72,12 @@ use utoipa::{
             crate::app::features::projects::interface::dto::ProjectResponseDto,
             crate::app::features::projects::interface::dto::CreateStackRequestDto,
             crate::app::features::projects::interface::dto::UpdateStackRequestDto,
+            crate::app::features::projects::interface::dto::UpdateStackRequestDto,
             crate::app::features::projects::interface::dto::StackResponseDto,
+            // Portfolios
+            crate::app::features::portfolio::interface::dto::CreatePortfolioRequestDto,
+            crate::app::features::portfolio::interface::dto::UpdatePortfolioRequestDto,
+            crate::app::features::portfolio::interface::dto::PortfolioResponseDto,
         )
     ),
     modifiers(&SecurityAddon),
@@ -78,6 +89,7 @@ use utoipa::{
         (name = "Home", description = "Home endpoints"),
         (name = "Blog", description = "Blog management"),
         (name = "Projects", description = "Project portfolio management"),
+        (name = "Portfolios", description = "Individual portfolio items"),
     ),
     info(
         title = "MyBlog API",

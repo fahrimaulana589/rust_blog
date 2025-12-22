@@ -11,6 +11,9 @@ use crate::app::features::blog::infrastructure::repository_impl::BlogRepositoryI
 use crate::app::features::home::domain::repository::CountRepository;
 
 use crate::app::features::home::infrastructure::repository_impl::CountRepositoryImpl;
+use crate::app::features::portfolio::application::usecase as portfolio_usecase;
+use crate::app::features::portfolio::domain::repository::PortfolioRepository;
+use crate::app::features::portfolio::infrastructure::repository_impl::PortfolioRepositoryImpl;
 use crate::app::features::projects::application::project_usecase;
 use crate::app::features::projects::application::stack_usecase;
 use crate::app::features::projects::domain::repository::ProjectRepository;
@@ -53,6 +56,11 @@ pub struct Container {
     pub get_stack_usecase: stack_usecase::get::Execute,
     pub update_stack_usecase: stack_usecase::update::Execute,
     pub delete_stack_usecase: stack_usecase::delete::Execute,
+    pub portfolio_create_usecase: portfolio_usecase::create::Execute,
+    pub portfolio_get_all_usecase: portfolio_usecase::get_all::Execute,
+    pub portfolio_get_usecase: portfolio_usecase::get::Execute,
+    pub portfolio_update_usecase: portfolio_usecase::update::Execute,
+    pub portfolio_delete_usecase: portfolio_usecase::delete::Execute,
 }
 
 impl Container {
@@ -122,6 +130,20 @@ impl Container {
         let update_stack_usecase = stack_usecase::update::Execute::new(project_repository.clone());
         let delete_stack_usecase = stack_usecase::delete::Execute::new(project_repository.clone());
 
+        let portfolio_repository: Arc<dyn PortfolioRepository + Send + Sync> =
+            Arc::new(PortfolioRepositoryImpl::new(pool.clone()));
+
+        let portfolio_create_usecase =
+            portfolio_usecase::create::Execute::new(portfolio_repository.clone());
+        let portfolio_get_all_usecase =
+            portfolio_usecase::get_all::Execute::new(portfolio_repository.clone());
+        let portfolio_get_usecase =
+            portfolio_usecase::get::Execute::new(portfolio_repository.clone());
+        let portfolio_update_usecase =
+            portfolio_usecase::update::Execute::new(portfolio_repository.clone());
+        let portfolio_delete_usecase =
+            portfolio_usecase::delete::Execute::new(portfolio_repository.clone());
+
         Self {
             config,
             count_usecase,
@@ -154,6 +176,11 @@ impl Container {
             get_stack_usecase,
             update_stack_usecase,
             delete_stack_usecase,
+            portfolio_create_usecase,
+            portfolio_get_all_usecase,
+            portfolio_get_usecase,
+            portfolio_update_usecase,
+            portfolio_delete_usecase,
         }
     }
 }
