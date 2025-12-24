@@ -6,7 +6,7 @@ use actix_web::{HttpResponse, Responder, get, post, web};
 use validator::Validate;
 
 #[utoipa::path(
-    path = "/api/profile",
+    path = "/app/profile",
     tag = "Profile",
     responses(
         (status = 200, description = "Get profile", body = crate::utils::success_response::SuccessResponse<Option<ProfileResponseDto>>),
@@ -33,7 +33,7 @@ pub async fn get_profile(container: web::Data<Container>) -> impl Responder {
 }
 
 #[utoipa::path(
-    path = "/api/profile",
+    path = "/app/profile",
     tag = "Profile",
     request_body = UpsertProfileRequestDto,
     responses(

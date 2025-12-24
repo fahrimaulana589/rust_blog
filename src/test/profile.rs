@@ -24,7 +24,11 @@ async fn test_get_profile_empty() {
     let mut conn = pool.get().unwrap();
     diesel::delete(profiles::table).execute(&mut conn).unwrap();
 
-    let req = test::TestRequest::get().uri("/api/profile").to_request();
+    let token = crate::test::helpers::login_admin(&app, &container).await;
+    let req = test::TestRequest::get()
+        .uri("/app/profile")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .to_request();
 
     let resp: SuccessResponse<Option<ProfileResponseDto>> =
         test::call_and_read_body_json(&app, req).await;
@@ -51,6 +55,7 @@ async fn test_upsert_profile() {
     use diesel::prelude::*;
     let mut conn = pool.get().unwrap();
     diesel::delete(profiles::table).execute(&mut conn).unwrap();
+    let token = crate::test::helpers::login_admin(&app, &container).await;
 
     let upsert_dto = UpsertProfileRequestDto {
         full_name: "John Doe".to_string(),
@@ -75,7 +80,8 @@ async fn test_upsert_profile() {
 
     // 1. Create
     let req = test::TestRequest::post()
-        .uri("/api/profile")
+        .uri("/app/profile")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&upsert_dto)
         .to_request();
 
@@ -90,7 +96,8 @@ async fn test_upsert_profile() {
     update_dto.specializations = vec!["Go".to_string()]; // Replace
 
     let req = test::TestRequest::post()
-        .uri("/api/profile")
+        .uri("/app/profile")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&update_dto)
         .to_request();
 
