@@ -49,6 +49,9 @@ use utoipa::{
         crate::app::features::portfolio::interface::controller::get_portfolio,
         crate::app::features::portfolio::interface::controller::update_portfolio,
         crate::app::features::portfolio::interface::controller::delete_portfolio,
+        // Profile
+        crate::app::features::profile::interface::controller::get_profile,
+        crate::app::features::profile::interface::controller::upsert_profile,
     ),
     components(
         schemas(
@@ -78,6 +81,10 @@ use utoipa::{
             crate::app::features::portfolio::interface::dto::CreatePortfolioRequestDto,
             crate::app::features::portfolio::interface::dto::UpdatePortfolioRequestDto,
             crate::app::features::portfolio::interface::dto::PortfolioResponseDto,
+            // Profile
+            crate::app::features::profile::interface::dto::UpsertProfileRequestDto,
+            crate::app::features::profile::interface::dto::ProfileResponseDto,
+            crate::app::features::profile::interface::dto::LanguageDto,
         )
     ),
     modifiers(&SecurityAddon),
@@ -90,6 +97,7 @@ use utoipa::{
         (name = "Blog", description = "Blog management"),
         (name = "Projects", description = "Project portfolio management"),
         (name = "Portfolios", description = "Individual portfolio items"),
+        (name = "Profile", description = "User profile management"),
     ),
     info(
         title = "MyBlog API",

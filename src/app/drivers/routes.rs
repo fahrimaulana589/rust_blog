@@ -47,6 +47,11 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
     .service(app::features::auth::interface::controller::login)
     .service(app::features::auth::interface::controller::forgot_password)
     .service(app::features::auth::interface::controller::reset_password)
+    .service(
+        web::scope("/api")
+            .service(app::features::profile::interface::controller::get_profile)
+            .service(app::features::profile::interface::controller::upsert_profile),
+    )
     .default_service(web::get().to(|| async {
         let error_response = map_string_error("Not Found".to_string());
         HttpResponse::NotFound().json(error_response)

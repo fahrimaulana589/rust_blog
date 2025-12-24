@@ -14,6 +14,9 @@ use crate::app::features::home::infrastructure::repository_impl::CountRepository
 use crate::app::features::portfolio::application::usecase as portfolio_usecase;
 use crate::app::features::portfolio::domain::repository::PortfolioRepository;
 use crate::app::features::portfolio::infrastructure::repository_impl::PortfolioRepositoryImpl;
+use crate::app::features::profile::application::usecase as profile_usecase;
+use crate::app::features::profile::domain::repository::ProfileRepository;
+use crate::app::features::profile::infrastructure::repository_impl::ProfileRepositoryImpl;
 use crate::app::features::projects::application::project_usecase;
 use crate::app::features::projects::application::stack_usecase;
 use crate::app::features::projects::domain::repository::ProjectRepository;
@@ -61,6 +64,8 @@ pub struct Container {
     pub portfolio_get_usecase: portfolio_usecase::get::Execute,
     pub portfolio_update_usecase: portfolio_usecase::update::Execute,
     pub portfolio_delete_usecase: portfolio_usecase::delete::Execute,
+    pub get_profile_usecase: profile_usecase::get::Execute,
+    pub upsert_profile_usecase: profile_usecase::upsert::Execute,
 }
 
 impl Container {
@@ -144,6 +149,12 @@ impl Container {
         let portfolio_delete_usecase =
             portfolio_usecase::delete::Execute::new(portfolio_repository.clone());
 
+        let profile_repository: Arc<dyn ProfileRepository + Send + Sync> =
+            Arc::new(ProfileRepositoryImpl::new(pool.clone()));
+        let get_profile_usecase = profile_usecase::get::Execute::new(profile_repository.clone());
+        let upsert_profile_usecase =
+            profile_usecase::upsert::Execute::new(profile_repository.clone());
+
         Self {
             config,
             count_usecase,
@@ -181,6 +192,8 @@ impl Container {
             portfolio_get_usecase,
             portfolio_update_usecase,
             portfolio_delete_usecase,
+            get_profile_usecase,
+            upsert_profile_usecase,
         }
     }
 }

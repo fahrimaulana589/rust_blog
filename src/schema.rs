@@ -53,6 +53,51 @@ diesel::table! {
 }
 
 diesel::table! {
+    profile_languages (id) {
+        id -> Integer,
+        profile_id -> Integer,
+        name -> Text,
+        level -> Text,
+    }
+}
+
+diesel::table! {
+    profile_specializations (id) {
+        id -> Integer,
+        profile_id -> Integer,
+        specialization -> Text,
+    }
+}
+
+diesel::table! {
+    profile_tech_focus (id) {
+        id -> Integer,
+        profile_id -> Integer,
+        tech_focus -> Text,
+    }
+}
+
+diesel::table! {
+    profiles (id) {
+        id -> Integer,
+        full_name -> Text,
+        headline -> Text,
+        summary -> Text,
+        role -> Text,
+        location -> Text,
+        profile_image -> Text,
+        availability -> Text,
+        years_of_experience -> Integer,
+        resume_url -> Text,
+        email -> Text,
+        work_philosophy -> Text,
+        timezone -> Text,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     project_stack (id) {
         id -> Integer,
         project_id -> Integer,
@@ -107,6 +152,9 @@ diesel::joinable!(blog -> categories (category_id));
 diesel::joinable!(blog_tags -> blog (blog_id));
 diesel::joinable!(blog_tags -> tags (tag_id));
 diesel::joinable!(portfolios -> projects (project_id));
+diesel::joinable!(profile_languages -> profiles (profile_id));
+diesel::joinable!(profile_specializations -> profiles (profile_id));
+diesel::joinable!(profile_tech_focus -> profiles (profile_id));
 diesel::joinable!(project_stack -> projects (project_id));
 diesel::joinable!(project_stack -> stacks (stack_id));
 
@@ -116,6 +164,10 @@ diesel::allow_tables_to_appear_in_same_query!(
     categories,
     counts,
     portfolios,
+    profile_languages,
+    profile_specializations,
+    profile_tech_focus,
+    profiles,
     project_stack,
     projects,
     stacks,
