@@ -32,7 +32,15 @@ async fn login(
         .execute(payload.username.clone(), payload.password.clone())
     {
         Ok(data) => {
-            HttpResponse::Ok().json(map_success_with_data("Login successful".to_string(), data))
+            let cookie = actix_web::cookie::Cookie::build("auth_token", data.token.clone())
+                .http_only(true)
+                .path("/")
+                .max_age(actix_web::cookie::time::Duration::hours(1))
+                .finish();
+
+            HttpResponse::Ok()
+                .cookie(cookie)
+                .json(map_success_with_data("Login successful".to_string(), data))
         }
         Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
     }
@@ -90,4 +98,40 @@ async fn reset_password(
         Ok(message) => HttpResponse::Ok().json(map_success_response(message)),
         Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
     }
+}
+
+#[utoipa::path(
+    get,
+    path = "/app/islogin",
+    tag = "Auth",
+    security(("jwt" = [])),
+    responses(
+        (status = 200, description = "User is logged in", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>),
+        (status = 401, description = "Unauthorized", body = ErrorResponse)
+    )
+)]
+#[actix_web::get("/islogin")]
+async fn is_login() -> impl Responder {
+    HttpResponse::Ok().json(map_success_response("User is logged in".to_string()))
+}
+
+#[utoipa::path(
+    post,
+    path = "/logout",
+    tag = "Auth",
+    responses(
+        (status = 200, description = "Logout successful", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>),
+    )
+)]
+#[actix_web::post("/logout")]
+async fn logout() -> impl Responder {
+    let cookie = actix_web::cookie::Cookie::build("auth_token", "")
+        .http_only(true)
+        .path("/")
+        .max_age(actix_web::cookie::time::Duration::milliseconds(0)) // 0 duration to expire immediately
+        .finish();
+
+    HttpResponse::Ok()
+        .cookie(cookie)
+        .json(map_success_response("Logout successful".to_string()))
 }

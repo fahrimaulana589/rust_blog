@@ -8,6 +8,8 @@ use utoipa::{
     paths(
         // Auth
         crate::app::features::auth::interface::controller::login,
+        crate::app::features::auth::interface::controller::logout,
+        crate::app::features::auth::interface::controller::is_login,
         crate::app::features::auth::interface::controller::forgot_password,
         crate::app::features::auth::interface::controller::reset_password,
         // Home

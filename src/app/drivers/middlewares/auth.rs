@@ -52,18 +52,27 @@ where
     fn call(&self, req: ServiceRequest) -> Self::Future {
         let auth_header = req.headers().get("Authorization");
 
-        if let Some(auth_str) = auth_header.and_then(|h| h.to_str().ok()) {
+        let token_value = if let Some(auth_str) = auth_header.and_then(|h| h.to_str().ok()) {
             if auth_str.starts_with("Bearer ") {
-                let token = &auth_str[7..];
-                if let Some(container) = req.app_data::<web::Data<Container>>() {
-                    if let Ok(_) = verify_token(token, &container.config.jwt_secret) {
-                        // Token is valid
-                        let fut = self.service.call(req);
-                        return Box::pin(async move {
-                            let res = fut.await?;
-                            Ok(res)
-                        });
-                    }
+                Some(auth_str[7..].to_string())
+            } else {
+                None
+            }
+        } else if let Some(cookie) = req.cookie("auth_token") {
+            Some(cookie.value().to_string())
+        } else {
+            None
+        };
+
+        if let Some(token) = token_value {
+            if let Some(container) = req.app_data::<web::Data<Container>>() {
+                if let Ok(_) = verify_token(&token, &container.config.jwt_secret) {
+                    // Token is valid
+                    let fut = self.service.call(req);
+                    return Box::pin(async move {
+                        let res = fut.await?;
+                        Ok(res)
+                    });
                 }
             }
         }

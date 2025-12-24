@@ -85,6 +85,14 @@ Success (200): contoh response
 }
 ```
 
+### POST /logout
+Description: Logs out the user by clearing the auth cookie.
+Success (200):
+```json
+{ "message": "Logout successful" }
+```
+Response Header: `Set-Cookie: auth_token=; Max-Age=0; HttpOnly; Path=/`
+
 ### POST /forgot-password
 Request body:
 ```json
@@ -104,6 +112,15 @@ Success (200):
 ```json
 { "message": "Password reset successful" }
 ```
+
+### GET /app/islogin
+Description: Check if user is authenticated (protected).
+Headers: `Authorization: Bearer <token>` or `Cookie: auth_token=<token>`
+Success (200):
+```json
+{ "message": "User is logged in" }
+```
+Error (401): Unauthorized
 
 ---
 

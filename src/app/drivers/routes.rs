@@ -44,9 +44,11 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
             .service(app::features::portfolio::interface::controller::update_portfolio)
             .service(app::features::portfolio::interface::controller::delete_portfolio)
             .service(app::features::profile::interface::controller::get_profile)
-            .service(app::features::profile::interface::controller::upsert_profile),
+            .service(app::features::profile::interface::controller::upsert_profile)
+            .service(app::features::auth::interface::controller::is_login),
     )
     .service(app::features::auth::interface::controller::login)
+    .service(app::features::auth::interface::controller::logout)
     .service(app::features::auth::interface::controller::forgot_password)
     .service(app::features::auth::interface::controller::reset_password)
     .default_service(web::get().to(|| async {

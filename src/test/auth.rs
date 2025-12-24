@@ -31,6 +31,142 @@ async fn test_login() {
         resp.data.unwrap().username,
         container.config.default_username
     );
+
+    // Verify Cookie
+    let login_dto_cookie = LoginRequestDto {
+        username: container.config.default_username.clone(),
+        password: container.config.default_password.clone(),
+    };
+    let req_cookie = test::TestRequest::post()
+        .uri("/login")
+        .set_json(&login_dto_cookie)
+        .to_request();
+    let resp_cookie = test::call_service(&app, req_cookie).await;
+    assert!(resp_cookie.status().is_success());
+
+    let cookie = resp_cookie
+        .response()
+        .cookies()
+        .find(|c| c.name() == "auth_token")
+        .expect("Cookie 'auth_token' not found");
+
+    assert_eq!(cookie.http_only(), Some(true));
+    assert_eq!(cookie.path(), Some("/"));
+}
+
+#[actix_web::test]
+#[serial]
+async fn test_cookie_auth() {
+    let container = Container::new();
+    seed_user(&container);
+    let app = init_test_app!(&container);
+
+    // 1. Login to get token
+    let login_dto = LoginRequestDto {
+        username: container.config.default_username.clone(),
+        password: container.config.default_password.clone(),
+    };
+
+    let req = test::TestRequest::post()
+        .uri("/login")
+        .set_json(&login_dto)
+        .to_request();
+
+    let resp = test::call_service(&app, req).await;
+    let cookie = resp
+        .response()
+        .cookies()
+        .find(|c| c.name() == "auth_token")
+        .expect("Cookie 'auth_token' not found")
+        .clone();
+
+    // 2. Access protected endpoint using cookie (No Bearer Header)
+    // Using /app/profile as protected endpoint example from API docs, or /app/count
+    let req_protected = test::TestRequest::get()
+        .uri("/app/count") // /app/count is protected
+        .cookie(cookie)
+        .to_request();
+
+    let resp_protected = test::call_service(&app, req_protected).await;
+    assert!(resp_protected.status().is_success());
+}
+
+#[actix_web::test]
+#[serial]
+async fn test_is_login() {
+    let container = Container::new();
+    seed_user(&container);
+    let app = init_test_app!(&container);
+
+    // 1. Unauthenticated request
+    let req = test::TestRequest::get().uri("/app/islogin").to_request();
+    // Middleware returns Err for unauthorized, so we must use app.call directly and expect Err
+    use actix_web::dev::Service;
+    let resp = app.call(req).await;
+    assert!(resp.is_err());
+    // Optionally check if error relates to Unauthorized if needed, but is_err is sufficient for now since middleware throws error.
+
+    // 2. Authenticated request
+    let login_dto = LoginRequestDto {
+        username: container.config.default_username.clone(),
+        password: container.config.default_password.clone(),
+    };
+    let req_login = test::TestRequest::post()
+        .uri("/login")
+        .set_json(&login_dto)
+        .to_request();
+    let resp_login = test::call_service(&app, req_login).await;
+    let cookie = resp_login
+        .response()
+        .cookies()
+        .find(|c| c.name() == "auth_token")
+        .expect("Cookie 'auth_token' not found")
+        .clone();
+
+    let req_auth = test::TestRequest::get()
+        .uri("/app/islogin")
+        .cookie(cookie)
+        .to_request();
+    let resp_auth = test::call_service(&app, req_auth).await;
+    assert_eq!(resp_auth.status(), actix_web::http::StatusCode::OK);
+}
+
+#[actix_web::test]
+#[serial]
+async fn test_logout() {
+    let container = Container::new();
+    seed_user(&container);
+    let app = init_test_app!(&container);
+
+    // 1. Login first to get a token (optional, but realistic)
+    let login_dto = LoginRequestDto {
+        username: container.config.default_username.clone(),
+        password: container.config.default_password.clone(),
+    };
+    let req_login = test::TestRequest::post()
+        .uri("/login")
+        .set_json(&login_dto)
+        .to_request();
+    let resp_login = test::call_service(&app, req_login).await;
+    assert!(resp_login.status().is_success());
+
+    // 2. Call Logout
+    let req_logout = test::TestRequest::post().uri("/logout").to_request();
+    let resp_logout = test::call_service(&app, req_logout).await;
+    assert!(resp_logout.status().is_success());
+
+    // 3. Verify Cookie is cleared
+    let cookie = resp_logout
+        .response()
+        .cookies()
+        .find(|c| c.name() == "auth_token")
+        .expect("Cookie 'auth_token' not found in logout response");
+
+    assert_eq!(cookie.value(), "");
+    assert_eq!(
+        cookie.max_age(),
+        Some(actix_web::cookie::time::Duration::ZERO)
+    );
 }
 
 #[actix_web::test]
