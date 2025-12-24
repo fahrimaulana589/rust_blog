@@ -1,360 +1,269 @@
-# API Documentation
 
-Berikut adalah dokumentasi lengkap endpoint API, termasuk format Request Body, Response Body Sukses, dan Response Gagal (Error).
+Dokumentasi lengkap endpoint API untuk project MyBlog. Dokumen ini mencakup semua endpoint yang terdaftar di aplikasi (auth, home, profile, blog, projects, stacks, portfolios).
 
-Base URL: `http://localhost:8080` (sesuaikan dengan config)
+Base URL: `http://localhost:8080`
 
-## Common Response Formats
+Swagger UI: `http://localhost:8080/swagger-ui/`
+OpenAPI JSON: `http://localhost:8080/api-docs/openapi.json`
 
-### Success Response
+## Format respon umum
+
+Success Response
 ```json
 {
   "message": "Operation successful",
-  "data": { ... } // Optional
+  "data": { /* optional */ }
 }
 ```
 
-### Paginated Response
+Paginated Response (contoh)
 ```json
 {
   "message": "Data fetched successfully",
   "data": {
-    "items": [ ... ],
-    "meta": {
-      "page": 1,
-      "per_page": 10,
-      "total_pages": 5,
-      "total_items": 50
-    }
+    "items": [ /* array of resource objects */ ],
+    "meta": { "page": 1, "per_page": 10, "total_pages": 1, "total_items": 10 }
   }
 }
 ```
 
-### Generic Error Response
-```json
-{
-  "message": "Unauthorized access",
-  "errors": null
-}
-```
-
-### Validation Error Response
+Error / Validation response
 ```json
 {
   "message": "Validation Error",
-  "errors": {
-    "field_name": "Error description"
-  }
+  "errors": { "field": "error message" }
 }
+```
+
+Catatan: Endpoint yang berada di bawah scope `/app` dilindungi oleh middleware `Auth` dan membutuhkan header:
+`Authorization: Bearer <JWT_TOKEN>`
+
+---
+
+## 1. Root & Home
+
+### GET /
+Description: Root health / welcome endpoint (public)
+
+Response (200 OK)
+```json
+{ "message": "Hello, world!" }
+```
+
+### GET /app/count
+Description: Increment/return a counter (protected)
+Response (200 OK)
+```json
+{ "message": "42" }
+```
+
+### GET /app/send-email
+Description: Trigger sending a test email (protected)
+Response (200 OK)
+```json
+{ "message": "Email sent successfully" }
 ```
 
 ---
 
-## 1. Authentication
+## 2. Authentication (Public)
 
-### Login
-**POST** `/login`
-*Access: Public*
-
-**Request Body:**
+### POST /login
+Request body:
 ```json
-{
-  "username": "admin",
-  "password": "password123"
-}
+{ "username": "admin", "password": "password" }
 ```
-
-**Response (Success - 200 OK):**
+Success (200): contoh response
 ```json
 {
   "message": "Login successful",
   "data": {
     "username": "admin",
     "email": "admin@example.com",
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "token": "eyJ..."
   }
 }
 ```
 
-**Response (Fail - 400 Bad Request):**
+### POST /forgot-password
+Request body:
 ```json
-{
-  "message": "Validation Error",
-  "errors": {
-    "username": "Username is required"
-  }
-}
+{ "email": "user@example.com" }
+```
+Success (200):
+```json
+{ "message": "Password reset email sent" }
 ```
 
-**Response (Fail - 401 Unauthorized):**
+### POST /reset-password
+Request body:
 ```json
-{
-  "message": "Invalid credentials",
-  "errors": null
-}
+{ "token": "token_from_email", "new_password": "newpass" }
 ```
-
-### Forgot Password
-**POST** `/forgot-password`
-*Access: Public*
-
-**Request Body:**
+Success (200):
 ```json
-{
-  "email": "user@example.com"
-}
-```
-
-**Response (Success - 200 OK):**
-```json
-{
-  "message": "Email sent successfully"
-}
-```
-
-**Response (Fail - 400 Bad Request):**
-```json
-{
-  "message": "Validation Error",
-  "errors": {
-    "email": "Email is invalid"
-  }
-}
-```
-
-### Reset Password
-**POST** `/reset-password`
-*Access: Public*
-
-**Request Body:**
-```json
-{
-  "token": "reset_token_from_email",
-  "new_password": "newSecurePassword123!"
-}
-```
-
-**Response (Success - 200 OK):**
-```json
-{
-  "message": "Password reset successfully"
-}
+{ "message": "Password reset successful" }
 ```
 
 ---
 
-## 2. Profile (Protected)
-*Headers: `Authorization: Bearer <token>`*
+## 3. Profile (Protected)
+Headers: `Authorization: Bearer <token>`
 
-### Get Profile
-**GET** `/app/profile`
-*Access: Protected*
+### GET /app/profile
+Response (200): Jika profile ada, `data` berisi object profile; jika belum dibuat, `data` adalah null.
 
-**Response (Success - 200 OK):**
-```json
-{
-  "message": "Profile fetched successfully",
-  "data": {
-    "full_name": "Fahri Maulana",
-    "headline": "Senior Rust Developer",
-    "summary": "Experienced developer...",
-    "role": "Backend Engineer",
-    "location": "Jakarta, Indonesia",
-    "profile_image": "https://...",
-    "availability": "Open for work",
-    "years_of_experience": 5,
-    "resume_url": "https://...",
-    "email": "fahri@example.com",
-    "work_philosophy": "Clean Code",
-    "timezone": "Asia/Jakarta",
-    "specializations": ["Rust", "System Design"],
-    "tech_focus": ["Actix Web", "Diesel"],
-    "languages": [
-      { "name": "Indonesian", "level": "Native" },
-      { "name": "English", "level": "Professional" }
-    ]
-  }
-}
-```
-*Note: Jika profile belum dibuat, `data` akan `null`, tapi status tetap 200 OK.*
-
-**Response (Fail - 401 Unauthorized):**
-```json
-{
-  "message": "Unauthorized",
-  "errors": null
-}
-```
-
-### Upsert Profile
-**POST** `/app/profile`
-*Access: Protected*
-
-**Request Body:**
+Contoh Profile object
 ```json
 {
   "full_name": "Fahri Maulana",
   "headline": "Senior Rust Developer",
-  "summary": "Updated summary...",
+  "summary": "Experienced developer...",
   "role": "Backend Engineer",
-  "location": "Jakarta",
-  "profile_image": "url",
-  "availability": "Full-time",
+  "location": "Jakarta, Indonesia",
+  "profile_image": "https://...",
+  "availability": "Open for work",
   "years_of_experience": 5,
-  "resume_url": "url",
-  "email": "valid@email.com",
-  "work_philosophy": "KISS",
-  "timezone": "UTC+7",
-  "specializations": ["Rust", "Go"],
-  "tech_focus": ["WebAssembly"],
-  "languages": [
-      { "name": "English", "level": "Fluent" }
-  ]
+  "resume_url": "https://...",
+  "email": "fahri@example.com",
+  "work_philosophy": "Clean Code",
+  "timezone": "Asia/Jakarta",
+  "specializations": ["Rust", "System Design"],
+  "tech_focus": ["Actix Web", "Diesel"],
+  "languages": [ { "name": "Indonesian", "level": "Native" }, { "name": "English", "level": "Professional" } ]
 }
 ```
 
-**Response (Success - 200 OK):**
-```json
-{
-  "message": "Profile upserted successfully",
-  "data": { ... } // Sama seperti Get Profile
-}
-```
+### POST /app/profile
+Request body: same shape as contoh Profile object (fields validated as in code)
 
-**Response (Fail - 400 Validation Error):**
-```json
-{
-  "message": "Validation Error",
-  "errors": {
-    "email": "Invalid email format",
-    "full_name": "Full name is required"
-  }
-}
-```
+Response (200): success message with the saved profile object in `data`.
 
 ---
 
-## 3. Blog (Protected)
-*Headers: `Authorization: Bearer <token>`*
+## 4. Blog (Protected)
+Headers: `Authorization: Bearer <token>`
+
+Semua endpoint blog ada di bawah `/app`.
 
 ### Categories
 
-#### Get Categories
-**GET** `/app/categories?page=1&per_page=10`
-
-**Response (Success - 200 OK):**
+- GET /app/categories?page={page}&per_page={per_page}
+  - Response: paginated list of categories
+  - Contoh satu item:
 ```json
 {
-  "message": "Categories fetched successfully",
-  "data": {
-    "items": [
-      {
-        "id": 1,
-        "name": "Rust",
-        "created_at": "2025-01-01T10:00:00",
-        "updated_at": "2025-01-01T10:00:00"
-      }
-    ],
-    "meta": { "page": 1, "per_page": 10, "total_pages": 1, "total_items": 1 }
-  }
+  "id": 1,
+  "name": "Rust",
+  "created_at": "2025-01-01T10:00:00Z",
+  "updated_at": "2025-01-01T10:00:00Z"
 }
 ```
 
-#### Create Category
-**POST** `/app/categories`
-
-**Request Body:**
+- POST /app/categories
+  - Request example:
 ```json
-{
-  "name": "Tutorial"
-}
+{ "name": "Tutorial" }
+```
+  - Success: 201 Created, contoh response:
+```json
+{ "message": "Category created successfully", "data": { "id": 2, "name": "Tutorial", "created_at": "...", "updated_at": "..." } }
 ```
 
-**Response (Success - 201 Created):**
+- GET /app/categories/{id}
+  - Path param: id (int)
+  - Success: category object
+
+- PUT /app/categories/{id}
+  - Request example:
 ```json
-{
-  "message": "Category created successfully",
-  "data": { "id": 2, "name": "Tutorial", ... }
-}
+{ "name": "Updated Name" }
 ```
 
-**Response (Fail - 400 Validation):**
+- DELETE /app/categories/{id}
+  - Success: empty success response
+
+### Tags
+
+- GET /app/tags?page={page}&per_page={per_page}
+  - Response: paginated list of tags
+  - Item example:
 ```json
-{
-  "message": "Validation Error",
-  "errors": { "name": "Name is required" }
-}
+{ "id": 1, "name": "Rust", "created_at": "...", "updated_at": "..." }
 ```
 
-#### Update Category
-**PUT** `/app/categories/{id}`
-
-**Response (Fail - 404 Not Found):**
+- POST /app/tags
+  - Request example:
 ```json
-{
-  "message": "Category not found",
-  "errors": null
-}
+{ "name": "Rust" }
 ```
 
----
+- GET /app/tags/{id}
+- PUT /app/tags/{id}
+  - Request example:
+```json
+{ "name": "New Tag" }
+```
+- DELETE /app/tags/{id}
 
 ### Blogs
 
-#### Create Blog
-**POST** `/app/blogs`
+- GET /app/blogs?page={page}&per_page={per_page}
+  - Response: paginated list of blog objects
+  - Blog item example:
+```json
+{
+  "id": 1,
+  "title": "Belajar Rust Dasar",
+  "slug": "belajar-rust-dasar",
+  "content": "Isi artikel...",
+  "excerpt": "Singkat cerita...",
+  "thumbnail": "url",
+  "status": "DRAFT",
+  "view_count": 10,
+  "category": { "id": 1, "name": "Rust" },
+  "tags": [ { "id": 1, "name": "Rust" } ],
+  "created_at": "2025-01-01T10:00:00Z",
+  "updated_at": "2025-01-01T10:00:00Z",
+  "published_at": null
+}
+```
 
-**Request Body:**
+- POST /app/blogs
+  - Request example:
 ```json
 {
   "title": "Belajar Rust Dasar",
   "content": "Isi artikel...",
   "category_id": 1,
-  "tag_ids": [1, 2],
-  "excerpt": "Singkat cerita...",
-  "thumbnail": "image_url",
+  "tag_ids": [1,2],
+  "excerpt": "...",
+  "thumbnail": "url",
   "status": "DRAFT"
 }
 ```
 
-**Response (Success - 200 OK):**
-```json
-{
-  "message": "Blog created successfully",
-  "data": {
-    "id": 1,
-    "title": "Belajar Rust Dasar",
-    "slug": "belajar-rust-dasar",
-    "status": "DRAFT",
-    ...
-  }
-}
-```
+- GET /app/blogs/{id}
+  - Success: blog object (see example above)
 
-**Response (Fail - 400 Validation):**
-```json
-{
-  "message": "Validation Error",
-  "errors": {
-    "title": "Title is required",
-    "content": "Content is required"
-  }
-}
-```
+- PUT /app/blogs/{id}
+  - Request: same fields as create but all optional
+
+- DELETE /app/blogs/{id}
 
 ---
 
-## 4. Projects & Portfolio (Protected)
-*Headers: `Authorization: Bearer <token>`*
+## 5. Projects & Stacks (Protected)
+Headers: `Authorization: Bearer <token>`
 
 ### Projects
 
-#### Create Project
-**POST** `/app/projects`
-
-**Request Body:**
+- GET /app/projects?page={page}&per_page={per_page}
+  - Response: paginated list of projects
+  - Project item example:
 ```json
 {
+  "id": 1,
   "nama_projek": "My Portfolio Website",
   "deskripsi": "Website personal...",
   "status": "ongoing",
@@ -363,42 +272,95 @@ Base URL: `http://localhost:8080` (sesuaikan dengan config)
   "repository": "https://github.com/...",
   "tanggal_mulai": "2025-01-01",
   "tanggal_selesai": null,
-  "stack_ids": [1, 3]
+  "stacks": [ { "id": 1, "nama_stack": "Rust" } ],
+  "created_at": "2025-01-01T10:00:00Z",
+  "updated_at": "2025-01-01T10:00:00Z"
 }
 ```
 
-**Response (Success - 200 OK):**
+- POST /app/projects
+  - Request example:
 ```json
 {
-  "message": "Project created successfully",
-  "data": {
-    "id": 1,
-    "nama_projek": "My Portfolio Website",
-    "status": "ongoing",
-    ...
-  }
+  "nama_projek": "My Portfolio Website",
+  "deskripsi": "...",
+  "status": "ongoing",
+  "progress": 50,
+  "link_demo": "https://...",
+  "repository": "https://github.com/...",
+  "tanggal_mulai": "2025-01-01",
+  "tanggal_selesai": null,
+  "stack_ids": [1,3]
 }
 ```
 
-### Portfolios
+- GET /app/projects/{id}
+- PUT /app/projects/{id}
+  - Request: partial fields allowed (see create example)
+- DELETE /app/projects/{id}
 
-#### Get Portfolios
-**GET** `/app/portfolios`
+### Stacks
 
-**Response (Success - 200 OK):**
+- GET /app/stacks
+- POST /app/stacks
+  - Request example:
+```json
+{ "nama_stack": "Rust" }
+```
+- GET /app/stacks/{id}
+- PUT /app/stacks/{id}
+  - Request example (same as create)
+- DELETE /app/stacks/{id}
+
+---
+
+## 6. Portfolios (Protected)
+Headers: `Authorization: Bearer <token>`
+
+- GET /app/portfolios?page={page}&per_page={per_page}
+  - Response: paginated list of portfolios
+  - Portfolio item example:
 ```json
 {
-  "message": "Data fetched successfully",
-  "data": {
-    "items": [
-      {
-        "id": 1,
-        "judul": "Fitur Dark Mode",
-        "project": { "id": 1, "nama_projek": "My Portfolio", ... }
-        ...
-      }
-    ],
-    "meta": { ... }
+  "id": 1,
+  "judul": "Fitur Dark Mode",
+  "deskripsi": "...",
+  "is_active": true,
+  "created_at": "2025-01-01T10:00:00Z",
+  "updated_at": "2025-01-01T10:00:00Z",
+  "project": { "id": 1, "nama_projek": "My Portfolio Website" }
+}
+```
+
+- POST /app/portfolios
+  - Request example:
+```json
+{ "project_id": 1, "judul": "Feature X", "deskripsi": "...", "is_active": true }
+```
+
+- GET /app/portfolios/{id}
+- PUT /app/portfolios/{id}
+  - Request example: same fields as create (all optional for update)
+- DELETE /app/portfolios/{id}
+
+---
+
+## Error handling notes
+- Validation errors return 400 with `errors` map detailing field errors.
+- Not found returns 404 with message (e.g., "Category not found").
+- Server errors return 500 with message string.
+
+## Quick tips
+- Use the Swagger UI (`/swagger-ui/`) to explore request/response schemas generated from the code.
+- Protected endpoints require `Authorization: Bearer <token>` where token is obtained from `/login` response.
+
+---
+
+Jika Anda ingin, saya bisa:
+- Menambahkan contoh curl untuk tiap endpoint.
+- Mengekspor file OpenAPI JSON/YAML yang dapat diimpor ke Postman (app sudah expose `/api-docs/openapi.json`).
+- Menambahkan tabel ringkas endpoint (method + path + auth) di bagian atas.
+
   }
 }
 ```
