@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
+use utoipa::{IntoParams, ToSchema};
 use validator::Validate;
 
 #[derive(Deserialize, Serialize, Validate, ToSchema)]
@@ -14,7 +14,7 @@ pub struct UpdateStackRequestDto {
     pub nama_stack: String,
 }
 
-#[derive(Deserialize, Serialize, Validate, ToSchema)]
+#[derive(Deserialize, Serialize, Validate, ToSchema, IntoParams)]
 pub struct PaginationRequestDto {
     pub page: Option<i64>,
     pub per_page: Option<i64>,

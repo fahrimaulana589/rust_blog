@@ -10,7 +10,7 @@ pub trait ProjectRepository {
     fn delete_project(&self, id: i32) -> QueryResult<usize>;
 
     // Stack CRUD
-    fn get_all_stacks(&self) -> QueryResult<Vec<Stack>>;
+    fn get_all_stacks(&self, limit: i64, offset: i64) -> QueryResult<(Vec<Stack>, i64)>;
     fn get_stack_by_id(&self, id: i32) -> QueryResult<Option<Stack>>;
     fn create_stack(&self, stack: NewStack) -> QueryResult<Stack>;
     fn get_stack_by_name(&self, name: &str) -> QueryResult<Option<Stack>>;

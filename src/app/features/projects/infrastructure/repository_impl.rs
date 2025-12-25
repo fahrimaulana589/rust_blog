@@ -71,9 +71,18 @@ impl ProjectRepository for ProjectRepositoryImpl {
     }
 
     // --- Stack ---
-    fn get_all_stacks(&self) -> QueryResult<Vec<Stack>> {
+    fn get_all_stacks(&self, limit: i64, offset: i64) -> QueryResult<(Vec<Stack>, i64)> {
         let mut conn = self.pool.get().unwrap();
-        stacks::table.load::<Stack>(&mut conn)
+
+        let items = stacks::table
+            .limit(limit)
+            .offset(offset)
+            .order(stacks::created_at.desc())
+            .load::<Stack>(&mut conn)?;
+
+        let total_count: i64 = stacks::table.count().get_result(&mut conn)?;
+
+        Ok((items, total_count))
     }
 
     fn get_stack_by_id(&self, id: i32) -> QueryResult<Option<Stack>> {

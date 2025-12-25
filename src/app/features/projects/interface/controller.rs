@@ -44,6 +44,9 @@ pub async fn create_project(
 #[utoipa::path(
     path = "/app/projects",
     tag = "Projects",
+    params(
+        PaginationRequestDto
+    ),
     responses(
         (status = 200, description = "List projects", body = crate::utils::success_response::SuccessResponse<crate::app::features::projects::interface::dto::PaginatedResponseDto<ProjectResponseDto>>),
         (status = 500, description = "Internal server error")
@@ -206,14 +209,23 @@ pub async fn create_stack(
 #[utoipa::path(
     path = "/app/stacks",
     tag = "Stacks",
+    params(
+        PaginationRequestDto
+    ),
     responses(
-        (status = 200, description = "List stacks", body = crate::utils::success_response::SuccessResponse<Vec<StackResponseDto>>),
+        (status = 200, description = "List stacks", body = crate::utils::success_response::SuccessResponse<crate::app::features::projects::interface::dto::PaginatedResponseDto<StackResponseDto>>),
         (status = 500, description = "Internal server error")
     )
 )]
 #[get("/stacks")]
-pub async fn get_all_stacks(data: web::Data<Container>) -> impl Responder {
-    match data.get_all_stacks_usecase.execute() {
+pub async fn get_all_stacks(
+    data: web::Data<Container>,
+    query: web::Query<PaginationRequestDto>,
+) -> impl Responder {
+    let page = query.page.unwrap_or(1);
+    let per_page = query.per_page.unwrap_or(10);
+
+    match data.get_all_stacks_usecase.execute(page, per_page) {
         Ok(res) => HttpResponse::Ok().json(SuccessResponse::new(
             "Stacks retrieved successfully".to_string(),
             Some(res),
