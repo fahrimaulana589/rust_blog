@@ -14,6 +14,7 @@ pub struct Portofolio {
     pub is_active: bool,
     pub created_at: chrono::NaiveDateTime,
     pub updated_at: chrono::NaiveDateTime,
+    pub slug: String,
 }
 
 #[derive(Debug, Clone, Insertable, Serialize, Deserialize)]
@@ -23,4 +24,5 @@ pub struct NewPortofolio {
     pub judul: String,
     pub deskripsi: Option<String>,
     pub is_active: bool,
+    pub slug: String,
 }

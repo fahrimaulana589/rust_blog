@@ -49,6 +49,7 @@ diesel::table! {
         is_active -> Bool,
         created_at -> Timestamp,
         updated_at -> Timestamp,
+        slug -> Text,
     }
 }
 

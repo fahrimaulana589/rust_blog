@@ -389,5 +389,5 @@ async fn test_create_duplicate_portofolio() {
 }
 
 fn common_validation_message() -> &'static str {
-    "Portofolio title already exists"
+    "Title already exists"
 }

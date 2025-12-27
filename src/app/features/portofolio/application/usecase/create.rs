@@ -25,15 +25,21 @@ impl Execute {
 
         let mut validation_errors = ValidationErrors::new();
 
-        if let Some(_existing) = self
+        let slug = dto
+            .judul
+            .to_lowercase()
+            .replace(" ", "-")
+            .chars()
+            .filter(|c| c.is_alphanumeric() || *c == '-')
+            .collect::<String>();
+
+        if self
             .repository
-            .find_by_judul(dto.judul.clone())
+            .find_by_slug(slug.clone())
             .map_err(|e| PortofolioError::System(e.to_string()))?
+            .is_some()
         {
-            validation_errors.add(
-                "judul",
-                ValidationError::new("Portofolio title already exists"),
-            );
+            validation_errors.add("judul", ValidationError::new("Title already exists"));
         }
 
         if !validation_errors.is_empty() {
@@ -43,6 +49,7 @@ impl Execute {
         let new_portfolio = NewPortofolio {
             project_id: dto.project_id,
             judul: dto.judul,
+            slug: slug.clone(),
             deskripsi: Some(dto.deskripsi),
             is_active: dto.is_active,
         };
@@ -55,6 +62,7 @@ impl Execute {
         Ok(PortofolioResponseDto {
             id: portfolio.id,
             judul: portfolio.judul,
+            slug: portfolio.slug,
             deskripsi: portfolio.deskripsi,
             is_active: portfolio.is_active,
             created_at: portfolio.created_at.to_string(),

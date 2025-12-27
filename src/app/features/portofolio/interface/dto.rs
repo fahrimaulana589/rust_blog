@@ -49,6 +49,7 @@ pub struct PaginatedResponseDto<T> {
 pub struct PortofolioResponseDto {
     pub id: i32,
     pub judul: String,
+    pub slug: String,
     pub deskripsi: Option<String>,
     pub is_active: bool,
     pub created_at: String,

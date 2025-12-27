@@ -26,6 +26,7 @@ impl Execute {
         Ok(PortofolioResponseDto {
             id: result.0.id,
             judul: result.0.judul,
+            slug: result.0.slug,
             deskripsi: result.0.deskripsi,
             is_active: result.0.is_active,
             created_at: result.0.created_at.to_string(),

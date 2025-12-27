@@ -36,6 +36,7 @@ impl Execute {
             .map(|(item, project, stacks)| PortofolioResponseDto {
                 id: item.id,
                 judul: item.judul,
+                slug: item.slug,
                 deskripsi: item.deskripsi,
                 is_active: item.is_active,
                 created_at: item.created_at.to_string(),

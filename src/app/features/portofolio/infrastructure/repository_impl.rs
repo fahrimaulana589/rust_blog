@@ -104,6 +104,7 @@ impl PortofolioRepository for PortofolioRepositoryImpl {
                 portofolios::judul.eq(portfolio_data.judul),
                 portofolios::deskripsi.eq(portfolio_data.deskripsi),
                 portofolios::is_active.eq(portfolio_data.is_active),
+                portofolios::slug.eq(portfolio_data.slug),
                 portofolios::updated_at.eq(diesel::dsl::now),
             ))
             .returning(Portofolio::as_returning())
@@ -130,6 +131,15 @@ impl PortofolioRepository for PortofolioRepositoryImpl {
 
         portofolios::table
             .filter(portofolios::judul.eq(judul))
+            .first(&mut conn)
+            .optional()
+    }
+
+    fn find_by_slug(&self, slug: String) -> QueryResult<Option<Portofolio>> {
+        let mut conn = self.pool.get().expect("Failed to get db connection");
+
+        portofolios::table
+            .filter(portofolios::slug.eq(slug))
             .first(&mut conn)
             .optional()
     }
