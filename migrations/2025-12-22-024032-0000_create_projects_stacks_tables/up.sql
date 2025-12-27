@@ -33,6 +33,6 @@ CREATE TABLE project_stack (
     project_id INTEGER NOT NULL,
     stack_id INTEGER NOT NULL,
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
-    FOREIGN KEY (stack_id) REFERENCES stacks(id) ON DELETE CASCADE,
+    FOREIGN KEY (stack_id) REFERENCES stacks(id) ON DELETE RESTRICT,
     UNIQUE(project_id, stack_id)
 );

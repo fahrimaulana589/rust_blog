@@ -379,6 +379,24 @@ async fn test_update_blog_empty_title_validation() {
     let app = init_test_app!(&container);
     let token = login_admin(&app, &container).await;
 
+    // Create Blog first to ensure ID exists
+    let create_dto = CreateBlogRequestDto {
+        title: format!("Valid Blog {}", Utc::now().timestamp_micros()),
+        content: "Content".to_string(),
+        category_id: 1,
+        tag_ids: None,
+        excerpt: "Excerpt".to_string(),
+        thumbnail: None,
+        status: "DRAFT".to_string(),
+    };
+    let req = test::TestRequest::post()
+        .uri("/app/blogs")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&create_dto)
+        .to_request();
+    let resp: SuccessResponse<BlogResponseDto> = test::call_and_read_body_json(&app, req).await;
+    let blog_id = resp.data.unwrap().id;
+
     // Attempt Update with empty title
     let update_dto = UpdateBlogRequestDto {
         title: "".to_string(), // Empty string
@@ -390,7 +408,7 @@ async fn test_update_blog_empty_title_validation() {
         status: "DRAFT".to_string(),
     };
     let req = test::TestRequest::put()
-        .uri("/app/blogs/123") // ID doesn't matter for DTO validation
+        .uri(&format!("/app/blogs/{}", blog_id))
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&update_dto)
         .to_request();

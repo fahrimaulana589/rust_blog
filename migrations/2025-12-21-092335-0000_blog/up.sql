@@ -23,7 +23,7 @@ create table blog (
 );
 
 create table blog_tags (
-    blog_id integer not null references blog(id),
-    tag_id integer not null references tags(id),
+    blog_id integer not null references blog(id) on delete cascade,
+    tag_id integer not null references tags(id) on delete restrict,
     primary key (blog_id, tag_id)
 );
