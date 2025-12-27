@@ -135,9 +135,9 @@ pub async fn update_project(
         .update_project_usecase
         .execute(id, payload.into_inner())
     {
-        Ok(_) => HttpResponse::Ok().json(SuccessResponse::<()>::new(
+        Ok(res) => HttpResponse::Ok().json(SuccessResponse::new(
             "Project updated successfully".to_string(),
-            None,
+            Some(res),
         )),
         Err(e) => match e {
             ProjectError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),
@@ -280,7 +280,7 @@ pub async fn get_stack(data: web::Data<Container>, path: web::Path<i32>) -> impl
     ),
     request_body = UpdateStackRequestDto, // This is technically from another module but generic name works if imported? Ah, need import or full path? Using `UpdateStackRequestDto` from import
     responses(
-        (status = 200, description = "Stack updated", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>),
+        (status = 200, description = "Stack updated", body = crate::utils::success_response::SuccessResponse<StackResponseDto>),
         (status = 400, description = "Validation error", body = ErrorResponse),
         (status = 500, description = "Internal server error")
     )
@@ -297,9 +297,9 @@ pub async fn update_stack(
     }
 
     match data.update_stack_usecase.execute(id, payload.into_inner()) {
-        Ok(_) => HttpResponse::Ok().json(SuccessResponse::<()>::new(
+        Ok(res) => HttpResponse::Ok().json(SuccessResponse::new(
             "Stack updated successfully".to_string(),
-            None,
+            Some(res),
         )),
         Err(e) => {
             if e.contains("not found") {

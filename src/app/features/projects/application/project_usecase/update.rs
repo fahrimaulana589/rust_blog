@@ -15,7 +15,16 @@ impl Execute {
         Self { repository }
     }
 
-    pub fn execute(&self, id: i32, dto: UpdateProjectRequestDto) -> Result<(), ProjectError> {
+    pub fn execute(
+        &self,
+        id: i32,
+        dto: UpdateProjectRequestDto,
+    ) -> Result<crate::app::features::projects::interface::dto::ProjectResponseDto, ProjectError>
+    {
+        use crate::app::features::projects::interface::dto::{
+            ProjectResponseDto, StackResponseDto,
+        };
+
         let existing = self
             .repository
             .get_project_by_id(id)
@@ -68,7 +77,8 @@ impl Execute {
             tanggal_selesai,
         };
 
-        self.repository
+        let updated_project = self
+            .repository
             .update_project(id, new_project)
             .map_err(|e| ProjectError::System(e.to_string()))?;
 
@@ -85,6 +95,33 @@ impl Execute {
             }
         }
 
-        Ok(())
+        // Fetch related stacks for response
+        let stacks = self
+            .repository
+            .get_stacks_by_project_id(id)
+            .map_err(|e| ProjectError::System(e.to_string()))?;
+
+        let stack_dtos = stacks
+            .into_iter()
+            .map(|s| StackResponseDto {
+                id: s.id,
+                nama_stack: s.nama_stack,
+            })
+            .collect();
+
+        Ok(ProjectResponseDto {
+            id: updated_project.id,
+            nama_projek: updated_project.nama_projek,
+            deskripsi: updated_project.deskripsi,
+            status: updated_project.status,
+            progress: updated_project.progress,
+            link_demo: updated_project.link_demo,
+            repository: updated_project.repository,
+            tanggal_mulai: updated_project.tanggal_mulai.to_string(),
+            tanggal_selesai: updated_project.tanggal_selesai.map(|d| d.to_string()),
+            stacks: stack_dtos,
+            created_at: updated_project.created_at.to_string(),
+            updated_at: updated_project.updated_at.to_string(),
+        })
     }
 }

@@ -1,7 +1,7 @@
 use crate::app::features::blog::domain::entity::NewTag;
 use crate::app::features::blog::domain::error::BlogError;
 use crate::app::features::blog::domain::repository::BlogRepository;
-use crate::app::features::blog::interface::dto::UpdateTagRequestDto;
+use crate::app::features::blog::interface::dto::{TagResponseDto, UpdateTagRequestDto};
 use std::sync::Arc;
 use validator::{Validate, ValidationError, ValidationErrors};
 
@@ -15,7 +15,11 @@ impl Execute {
         Self { repository }
     }
 
-    pub async fn execute(&self, id: i32, dto: UpdateTagRequestDto) -> Result<(), BlogError> {
+    pub async fn execute(
+        &self,
+        id: i32,
+        dto: UpdateTagRequestDto,
+    ) -> Result<TagResponseDto, BlogError> {
         let existing = self
             .repository
             .get_tag_by_id(id)
@@ -46,9 +50,16 @@ impl Execute {
         let new_tag = NewTag {
             name: dto.name.unwrap_or(existing.name),
         };
-        self.repository
+        let updated_tag = self
+            .repository
             .update_tag(id, new_tag)
             .map_err(|e| BlogError::System(e.to_string()))?;
-        Ok(())
+
+        Ok(TagResponseDto {
+            id: updated_tag.id,
+            name: updated_tag.name,
+            created_at: updated_tag.created_at.to_string(),
+            updated_at: updated_tag.updated_at.to_string(),
+        })
     }
 }

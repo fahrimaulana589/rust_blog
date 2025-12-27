@@ -54,6 +54,7 @@ src/
        - `Some(value)`: Update to new value.
        - `Some("")` (empty string): Trigger validation error if field is required (e.g., `#[validate(length(min=1))]`).
      - **Implementation**: In UseCase, merge existing entity with provided `Some` values: `dto.field.unwrap_or(existing.field)`.
+     - **Response**: MUST return the updated entity data (e.g., `SuccessResponse<UserResponseDto>`). Do NOT return empty success.
 
 2. **Application Layer (`application/`)**
    - **Use Cases**: Contains business logic.

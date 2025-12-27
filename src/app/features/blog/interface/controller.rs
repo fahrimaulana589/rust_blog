@@ -6,7 +6,7 @@ use crate::app::features::blog::interface::dto::{
 use crate::utils::di::Container;
 use crate::utils::error_response::{ErrorResponse, map_string_error, map_validation_error};
 use crate::utils::success_response::{
-    Empty, SuccessResponse, map_success_response, map_success_with_data,
+    SuccessResponse, map_success_response, map_success_with_data,
 };
 use actix_web::{HttpResponse, Responder, delete, get, post, put, web};
 
@@ -110,7 +110,7 @@ pub async fn get_category(container: web::Data<Container>, id: web::Path<i32>) -
     tag = "Category",
     request_body = UpdateCategoryRequestDto,
     responses(
-        (status = 200, description = "Category updated successfully", body = SuccessResponse<Empty>),
+        (status = 200, description = "Category updated successfully", body = SuccessResponse<CategoryResponseDto>),
         (status = 400, description = "Validation error", body = ErrorResponse),
         (status = 500, description = "Internal server error")
     ),
@@ -128,8 +128,9 @@ pub async fn update_category(
         .execute(id.into_inner(), payload.into_inner())
         .await
     {
-        Ok(_) => HttpResponse::Ok().json(map_success_response(
+        Ok(res) => HttpResponse::Ok().json(map_success_with_data(
             "Category updated successfully".to_string(),
+            res,
         )),
         Err(e) => match e {
             BlogError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),
@@ -268,7 +269,7 @@ pub async fn get_tag(container: web::Data<Container>, id: web::Path<i32>) -> imp
     tag = "Tag",
     request_body = UpdateTagRequestDto,
     responses(
-        (status = 200, description = "Tag updated successfully", body = SuccessResponse<Empty>),
+        (status = 200, description = "Tag updated successfully", body = SuccessResponse<TagResponseDto>),
         (status = 400, description = "Validation error", body = ErrorResponse),
         (status = 500, description = "Internal server error")
     ),
@@ -286,9 +287,10 @@ pub async fn update_tag(
         .execute(id.into_inner(), payload.into_inner())
         .await
     {
-        Ok(_) => {
-            HttpResponse::Ok().json(map_success_response("Tag updated successfully".to_string()))
-        }
+        Ok(res) => HttpResponse::Ok().json(map_success_with_data(
+            "Tag updated successfully".to_string(),
+            res,
+        )),
         Err(e) => match e {
             BlogError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),
             BlogError::NotFound(msg) => HttpResponse::NotFound().json(map_string_error(msg)),
@@ -426,7 +428,7 @@ pub async fn get_blog(container: web::Data<Container>, id: web::Path<i32>) -> im
     ),
     request_body = UpdateBlogRequestDto,
     responses(
-        (status = 200, description = "Blog updated", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>),
+        (status = 200, description = "Blog updated", body = crate::utils::success_response::SuccessResponse<BlogResponseDto>),
         (status = 400, description = "Validation error", body = ErrorResponse),
         (status = 500, description = "Internal server error")
     )
@@ -444,8 +446,9 @@ pub async fn update_blog(
         .execute(id.into_inner(), payload.into_inner())
         .await
     {
-        Ok(_) => HttpResponse::Ok().json(map_success_response(
+        Ok(res) => HttpResponse::Ok().json(map_success_with_data(
             "Blog updated successfully".to_string(),
+            res,
         )),
         Err(e) => match e {
             BlogError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),

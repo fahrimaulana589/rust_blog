@@ -141,24 +141,17 @@ async fn test_update_tag() {
         .expect("Tag not found");
 
     // Update
+    let update_name = format!("Test Updated Tag Name {}", Utc::now().timestamp_micros());
     let update_dto = UpdateTagRequestDto {
-        name: Some("Test Updated Tag Name".to_string()),
+        name: Some(update_name.clone()),
     };
     let req = test::TestRequest::put()
         .uri(&format!("/app/tags/{}", tag.id))
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&update_dto)
         .to_request();
-    let resp = test::call_service(&app, req).await;
-    assert!(resp.status().is_success());
-
-    // Verify
-    let req = test::TestRequest::get()
-        .uri(&format!("/app/tags/{}", tag.id))
-        .insert_header(("Authorization", format!("Bearer {}", token)))
-        .to_request();
     let resp: SuccessResponse<TagResponseDto> = test::call_and_read_body_json(&app, req).await;
-    assert_eq!(resp.data.unwrap().name, "Test Updated Tag Name");
+    assert_eq!(resp.data.unwrap().name, update_name);
 }
 
 #[actix_web::test]

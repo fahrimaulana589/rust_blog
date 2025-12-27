@@ -237,14 +237,6 @@ async fn test_update_project() {
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&update_dto)
         .to_request();
-    let resp = test::call_service(&app, req).await;
-    assert!(resp.status().is_success());
-
-    // Verify
-    let req = test::TestRequest::get()
-        .uri(&format!("/app/projects/{}", id))
-        .insert_header(("Authorization", format!("Bearer {}", token)))
-        .to_request();
     let resp: SuccessResponse<ProjectResponseDto> = test::call_and_read_body_json(&app, req).await;
     let updated = resp.data.unwrap();
 
@@ -373,14 +365,6 @@ async fn test_project_stack_flow() {
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&update_dto)
         .to_request();
-    let resp = test::call_service(&app, req).await;
-    assert!(resp.status().is_success());
-
-    // 4. Verify Stack Update (Path: Get Project)
-    let req = test::TestRequest::get()
-        .uri(&format!("/app/projects/{}", project_id))
-        .insert_header(("Authorization", format!("Bearer {}", token)))
-        .to_request();
     let resp: SuccessResponse<ProjectResponseDto> = test::call_and_read_body_json(&app, req).await;
     let updated = resp.data.unwrap();
 
@@ -450,14 +434,6 @@ async fn test_update_stack() {
         .uri(&format!("/app/stacks/{}", stack_id))
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&update_dto)
-        .to_request();
-    let resp = test::call_service(&app, req).await;
-    assert!(resp.status().is_success());
-
-    // Verify
-    let req = test::TestRequest::get()
-        .uri(&format!("/app/stacks/{}", stack_id))
-        .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
     let resp: SuccessResponse<StackResponseDto> = test::call_and_read_body_json(&app, req).await;
     assert_eq!(resp.data.unwrap().nama_stack, update_name);

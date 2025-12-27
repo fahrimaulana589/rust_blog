@@ -113,7 +113,7 @@ pub async fn get_portfolio(data: web::Data<Container>, id: web::Path<i32>) -> im
     ),
     request_body = UpdatePortfolioRequestDto,
     responses(
-        (status = 200, description = "Portfolio updated", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>),
+        (status = 200, description = "Portfolio updated", body = crate::utils::success_response::SuccessResponse<PortfolioResponseDto>),
         (status = 400, description = "Validation error", body = ErrorResponse),
         (status = 500, description = "Internal server error")
     )
@@ -134,7 +134,9 @@ pub async fn update_portfolio(
         .portfolio_update_usecase
         .execute(id.into_inner(), payload.into_inner())
     {
-        Ok(_) => HttpResponse::Ok().json(map_success_response("Portfolio updated".to_string())),
+        Ok(res) => {
+            HttpResponse::Ok().json(map_success_with_data("Portfolio updated".to_string(), res))
+        }
         Err(e) => match e {
             PortfolioError::Validation(e) => {
                 HttpResponse::BadRequest().json(map_validation_error(e))

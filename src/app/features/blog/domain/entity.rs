@@ -2,7 +2,7 @@ use crate::schema::{blog, blog_tags, categories, tags};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Identifiable, Debug, Clone, PartialEq)]
 #[diesel(table_name =categories)]
 pub struct Category {
     pub id: i32,
@@ -17,7 +17,7 @@ pub struct NewCategory {
     pub name: String,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Identifiable, Debug, Clone, PartialEq)]
 #[diesel(table_name =tags)]
 pub struct Tag {
     pub id: i32,
@@ -32,7 +32,7 @@ pub struct NewTag {
     pub name: String,
 }
 
-#[derive(Identifiable, Queryable, Selectable, Associations)]
+#[derive(Identifiable, Queryable, Selectable, Associations, Debug, Clone, PartialEq)]
 #[diesel(table_name =blog)]
 #[diesel(belongs_to(Category,foreign_key = category_id))]
 pub struct Blog {

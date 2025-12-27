@@ -19,8 +19,14 @@ impl Execute {
         &self,
         id: i32,
         dto: UpdateBlogRequestDto,
-    ) -> Result<(), crate::app::features::blog::domain::error::BlogError> {
+    ) -> Result<
+        crate::app::features::blog::interface::dto::BlogResponseDto,
+        crate::app::features::blog::domain::error::BlogError,
+    > {
         use crate::app::features::blog::domain::error::BlogError;
+        use crate::app::features::blog::interface::dto::{
+            BlogResponseDto, CategoryResponseDto, TagResponseDto,
+        };
         use validator::Validate;
         use validator::ValidationError;
 
@@ -33,29 +39,37 @@ impl Execute {
 
         let mut validation_errors = dto.validate().err().unwrap_or_default();
 
-        // Validate Category Exists
+        // Re-implementing validation logic properly
+        let mut new_category_obj = None;
         if self
             .repository
             .get_category_by_id(dto.category_id)
             .map_err(|e| BlogError::System(e.to_string()))?
+            .map(|c| {
+                new_category_obj = Some(c.clone());
+                c
+            })
             .is_none()
         {
             validation_errors.add("category_id", ValidationError::new("Category not found"));
         }
 
         let val_tag_ids = dto.tag_ids.clone();
+        let mut new_tags_objs = Vec::new();
 
         // Validate Tag Exists
         if let Some(tag_ids) = val_tag_ids {
             for tag_id in tag_ids {
-                if self
+                match self
                     .repository
                     .get_tag_by_id(tag_id)
                     .map_err(|e| BlogError::System(e.to_string()))?
-                    .is_none()
                 {
-                    validation_errors.add("tag_ids", ValidationError::new("Tag not found"));
-                    break;
+                    Some(t) => new_tags_objs.push(t),
+                    None => {
+                        validation_errors.add("tag_ids", ValidationError::new("Tag not found"));
+                        break;
+                    }
                 }
             }
         }
@@ -100,16 +114,17 @@ impl Execute {
             slug,
             excerpt: dto.excerpt,
             thumbnail: dto.thumbnail.or(existing_blog.thumbnail),
-            status,
+            status: status.clone(),
             published_at,
             view_count: existing_blog.view_count,
         };
-        self.repository
+        let updated_blog = self
+            .repository
             .update_blog(id, new_blog)
             .map_err(|e| BlogError::System(e.to_string()))?;
 
         // Update Tags if provided
-        if let Some(tag_ids) = dto.tag_ids {
+        if let Some(ref tag_ids) = dto.tag_ids {
             // Delete existing tags
             self.repository
                 .delete_blog_tags_by_blog_id(id)
@@ -119,7 +134,7 @@ impl Execute {
             for tag_id in tag_ids {
                 let blog_tags = BlogTags {
                     blog_id: id,
-                    tag_id,
+                    tag_id: *tag_id,
                 };
                 self.repository
                     .create_blog_tags(blog_tags)
@@ -127,6 +142,53 @@ impl Execute {
             }
         }
 
-        Ok(())
+        // Construct Response Data
+        // 1. Category
+        let final_category = new_category_obj
+            .ok_or_else(|| BlogError::System("Category should exist".to_string()))?; // We validated it exists above
+
+        let category_dto = CategoryResponseDto {
+            id: final_category.id,
+            name: final_category.name,
+            created_at: final_category.created_at.to_string(),
+            updated_at: final_category.updated_at.to_string(),
+        };
+
+        // 2. Tags
+        // If dto.tag_ids was Some, we have new_tags_objs populated.
+        // If dto.tag_ids was None, we need to fetch existing tags (since we didn't touch them).
+        let final_tags = if dto.tag_ids.is_some() {
+            new_tags_objs
+        } else {
+            self.repository
+                .get_tags_by_blog_id(id)
+                .map_err(|e| BlogError::System(e.to_string()))?
+        };
+
+        let tags_dto = final_tags
+            .into_iter()
+            .map(|t| TagResponseDto {
+                id: t.id,
+                name: t.name,
+                created_at: t.created_at.to_string(),
+                updated_at: t.updated_at.to_string(),
+            })
+            .collect();
+
+        Ok(BlogResponseDto {
+            id: updated_blog.id,
+            title: updated_blog.title,
+            slug: updated_blog.slug,
+            content: updated_blog.content,
+            excerpt: updated_blog.excerpt,
+            thumbnail: updated_blog.thumbnail,
+            status: updated_blog.status,
+            view_count: updated_blog.view_count,
+            category: category_dto,
+            tags: tags_dto,
+            created_at: updated_blog.created_at.to_string(),
+            updated_at: updated_blog.updated_at.to_string(),
+            published_at: updated_blog.published_at.map(|d| d.to_string()),
+        })
     }
 }

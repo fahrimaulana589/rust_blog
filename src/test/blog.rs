@@ -236,8 +236,11 @@ async fn test_update_blog() {
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&update_dto)
         .to_request();
-    let resp = test::call_service(&app, req).await;
-    assert!(resp.status().is_success());
+    let resp: SuccessResponse<BlogResponseDto> = test::call_and_read_body_json(&app, req).await;
+    let data = resp.data.unwrap();
+
+    assert_eq!(data.title, update_title);
+    assert_eq!(data.content, "Updated Content");
 
     // Verify
     let req = test::TestRequest::get()
@@ -353,8 +356,9 @@ async fn test_partial_update_blog() {
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&update_dto)
         .to_request();
-    let resp = test::call_service(&app, req).await;
-    assert!(resp.status().is_success());
+    let resp: SuccessResponse<BlogResponseDto> = test::call_and_read_body_json(&app, req).await;
+    let data = resp.data.unwrap();
+    assert_eq!(data.title, update_title);
 
     // Verify
     let req = test::TestRequest::get()

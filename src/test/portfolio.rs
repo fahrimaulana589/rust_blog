@@ -239,14 +239,6 @@ async fn test_update_portfolio() {
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&update_dto)
         .to_request();
-    let resp = test::call_service(&app, req).await;
-    assert!(resp.status().is_success());
-
-    // 4. Verify
-    let req = test::TestRequest::get()
-        .uri(&format!("/app/portfolios/{}", portfolio_id))
-        .insert_header(("Authorization", format!("Bearer {}", token)))
-        .to_request();
     let resp: SuccessResponse<PortfolioResponseDto> =
         test::call_and_read_body_json(&app, req).await;
     let portfolio = resp.data.unwrap();
@@ -254,6 +246,18 @@ async fn test_update_portfolio() {
     assert_eq!(portfolio.judul, update_title);
     assert_eq!(portfolio.deskripsi, Some("Updated Desc".to_string()));
     assert_eq!(portfolio.is_active, false);
+
+    // 4. Verify (Optional double check via Get, but Update response is trusted now)
+    let req = test::TestRequest::get()
+        .uri(&format!("/app/portfolios/{}", portfolio_id))
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .to_request();
+    let resp: SuccessResponse<PortfolioResponseDto> =
+        test::call_and_read_body_json(&app, req).await;
+    let portfolio_get = resp.data.unwrap();
+
+    assert_eq!(portfolio_get.judul, update_title);
+    assert_eq!(portfolio_get.is_active, false);
 }
 
 #[actix_web::test]

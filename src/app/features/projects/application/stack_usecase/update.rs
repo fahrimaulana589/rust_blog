@@ -12,7 +12,13 @@ impl Execute {
         Self { repository }
     }
 
-    pub fn execute(&self, id: i32, dto: UpdateStackRequestDto) -> Result<(), String> {
+    pub fn execute(
+        &self,
+        id: i32,
+        dto: UpdateStackRequestDto,
+    ) -> Result<crate::app::features::projects::interface::dto::StackResponseDto, String> {
+        use crate::app::features::projects::interface::dto::StackResponseDto;
+
         let _existing = self
             .repository
             .get_stack_by_id(id)
@@ -23,9 +29,14 @@ impl Execute {
             nama_stack: dto.nama_stack,
         };
 
-        self.repository
+        let updated_stack = self
+            .repository
             .update_stack(id, stack)
             .map_err(|e| e.to_string())?;
-        Ok(())
+
+        Ok(StackResponseDto {
+            id: updated_stack.id,
+            nama_stack: updated_stack.nama_stack,
+        })
     }
 }
