@@ -1,5 +1,5 @@
-use crate::app::features::portfolio::interface::dto::{
-    CreatePortfolioRequestDto, PortfolioResponseDto, UpdatePortfolioRequestDto,
+use crate::app::features::portofolio::interface::dto::{
+    CreatePortofolioRequestDto, PortofolioResponseDto, UpdatePortofolioRequestDto,
 };
 use crate::app::features::projects::interface::dto::{CreateProjectRequestDto, ProjectResponseDto};
 use crate::init_test_app;
@@ -12,7 +12,7 @@ use serial_test::serial;
 
 #[actix_web::test]
 #[serial]
-async fn test_create_portfolio() {
+async fn test_create_portofolio() {
     let container = Container::new();
     seed_user(&container);
     let app = init_test_app!(&container);
@@ -23,7 +23,7 @@ async fn test_create_portfolio() {
     let create_project_dto = CreateProjectRequestDto {
         nama_projek: project_name,
         deskripsi: "Desc".to_string(),
-        status: "ongoing".to_string(),
+        status: "ONGOING".to_string(),
         progress: 0,
         link_demo: None,
         repository: None,
@@ -39,33 +39,33 @@ async fn test_create_portfolio() {
     let resp: SuccessResponse<ProjectResponseDto> = test::call_and_read_body_json(&app, req).await;
     let project_id = resp.data.unwrap().id;
 
-    // 2. Create Portfolio
-    let portfolio_title = format!("Portfolio 1 {}", Utc::now().timestamp_micros());
-    let create_portfolio_dto = CreatePortfolioRequestDto {
+    // 2. Create Portofolio
+    let portofolio_title = format!("Portofolio 1 {}", Utc::now().timestamp_micros());
+    let create_portofolio_dto = CreatePortofolioRequestDto {
         project_id,
-        judul: portfolio_title.clone(),
-        deskripsi: "Portfolio Desc".to_string(),
+        judul: portofolio_title.clone(),
+        deskripsi: "Portofolio Desc".to_string(),
         is_active: true,
     };
 
     let req = test::TestRequest::post()
-        .uri("/app/portfolios")
+        .uri("/app/portofolios")
         .insert_header(("Authorization", format!("Bearer {}", token)))
-        .set_json(&create_portfolio_dto)
+        .set_json(&create_portofolio_dto)
         .to_request();
-    let resp: SuccessResponse<PortfolioResponseDto> =
+    let resp: SuccessResponse<PortofolioResponseDto> =
         test::call_and_read_body_json(&app, req).await;
-    let portfolio = resp.data.unwrap();
+    let portofolio = resp.data.unwrap();
 
-    assert_eq!(portfolio.judul, portfolio_title);
-    assert_eq!(portfolio.project.id, project_id);
-    assert_eq!(portfolio.deskripsi, Some("Portfolio Desc".to_string()));
-    assert_eq!(portfolio.is_active, true);
+    assert_eq!(portofolio.judul, portofolio_title);
+    assert_eq!(portofolio.project.id, project_id);
+    assert_eq!(portofolio.deskripsi, Some("Portofolio Desc".to_string()));
+    assert_eq!(portofolio.is_active, true);
 }
 
 #[actix_web::test]
 #[serial]
-async fn test_get_portfolios() {
+async fn test_get_portofolios() {
     let container = Container::new();
     seed_user(&container);
     let app = init_test_app!(&container);
@@ -76,7 +76,7 @@ async fn test_get_portfolios() {
     let create_project_dto = CreateProjectRequestDto {
         nama_projek: project_name,
         deskripsi: "Desc".to_string(),
-        status: "ongoing".to_string(),
+        status: "ONGOING".to_string(),
         progress: 0,
         link_demo: None,
         repository: None,
@@ -92,38 +92,40 @@ async fn test_get_portfolios() {
     let resp: SuccessResponse<ProjectResponseDto> = test::call_and_read_body_json(&app, req).await;
     let project_id = resp.data.unwrap().id;
 
-    // 2. Create Portfolio
-    let portfolio_title = format!("Portfolio 2 {}", Utc::now().timestamp_micros());
-    let create_portfolio_dto = CreatePortfolioRequestDto {
+    // 2. Create Portofolio
+    let portofolio_title = format!("Portofolio 2 {}", Utc::now().timestamp_micros());
+    let create_portofolio_dto = CreatePortofolioRequestDto {
         project_id,
-        judul: portfolio_title.clone(),
+        judul: portofolio_title.clone(),
         deskripsi: "Desc".to_string(),
         is_active: true,
     };
     let req = test::TestRequest::post()
-        .uri("/app/portfolios")
+        .uri("/app/portofolios")
         .insert_header(("Authorization", format!("Bearer {}", token)))
-        .set_json(&create_portfolio_dto)
+        .set_json(&create_portofolio_dto)
         .to_request();
     test::call_service(&app, req).await;
 
     // 3. Get All
     let req = test::TestRequest::get()
-        .uri("/app/portfolios")
+        .uri("/app/portofolios")
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
     let resp: SuccessResponse<
-        crate::app::features::portfolio::interface::dto::PaginatedResponseDto<PortfolioResponseDto>,
+        crate::app::features::portofolio::interface::dto::PaginatedResponseDto<
+            PortofolioResponseDto,
+        >,
     > = test::call_and_read_body_json(&app, req).await;
 
     let items = resp.data.unwrap().items;
     assert!(items.len() > 0);
-    assert!(items.iter().any(|i| i.judul == portfolio_title));
+    assert!(items.iter().any(|i| i.judul == portofolio_title));
 }
 
 #[actix_web::test]
 #[serial]
-async fn test_get_portfolio_by_id() {
+async fn test_get_portofolio_by_id() {
     let container = Container::new();
     seed_user(&container);
     let app = init_test_app!(&container);
@@ -134,7 +136,7 @@ async fn test_get_portfolio_by_id() {
     let create_project_dto = CreateProjectRequestDto {
         nama_projek: project_name,
         deskripsi: "Desc".to_string(),
-        status: "ongoing".to_string(),
+        status: "ONGOING".to_string(),
         progress: 0,
         link_demo: None,
         repository: None,
@@ -150,39 +152,39 @@ async fn test_get_portfolio_by_id() {
     let resp: SuccessResponse<ProjectResponseDto> = test::call_and_read_body_json(&app, req).await;
     let project_id = resp.data.unwrap().id;
 
-    // 2. Create Portfolio
-    let portfolio_title = format!("Portfolio 3 {}", Utc::now().timestamp_micros());
-    let create_portfolio_dto = CreatePortfolioRequestDto {
+    // 2. Create Portofolio
+    let portofolio_title = format!("Portofolio 3 {}", Utc::now().timestamp_micros());
+    let create_portofolio_dto = CreatePortofolioRequestDto {
         project_id,
-        judul: portfolio_title.clone(),
+        judul: portofolio_title.clone(),
         deskripsi: "Desc".to_string(),
         is_active: true,
     };
     let req = test::TestRequest::post()
-        .uri("/app/portfolios")
+        .uri("/app/portofolios")
         .insert_header(("Authorization", format!("Bearer {}", token)))
-        .set_json(&create_portfolio_dto)
+        .set_json(&create_portofolio_dto)
         .to_request();
-    let resp: SuccessResponse<PortfolioResponseDto> =
+    let resp: SuccessResponse<PortofolioResponseDto> =
         test::call_and_read_body_json(&app, req).await;
-    let portfolio_id = resp.data.unwrap().id;
+    let portofolio_id = resp.data.unwrap().id;
 
     // 3. Get By ID
     let req = test::TestRequest::get()
-        .uri(&format!("/app/portfolios/{}", portfolio_id))
+        .uri(&format!("/app/portofolios/{}", portofolio_id))
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
-    let resp: SuccessResponse<PortfolioResponseDto> =
+    let resp: SuccessResponse<PortofolioResponseDto> =
         test::call_and_read_body_json(&app, req).await;
-    let portfolio = resp.data.unwrap();
+    let portofolio = resp.data.unwrap();
 
-    assert_eq!(portfolio.judul, portfolio_title);
-    assert_eq!(portfolio.is_active, true); // Default
+    assert_eq!(portofolio.judul, portofolio_title);
+    assert_eq!(portofolio.is_active, true); // Default
 }
 
 #[actix_web::test]
 #[serial]
-async fn test_update_portfolio() {
+async fn test_update_portofolio() {
     let container = Container::new();
     seed_user(&container);
     let app = init_test_app!(&container);
@@ -193,7 +195,7 @@ async fn test_update_portfolio() {
     let create_project_dto = CreateProjectRequestDto {
         nama_projek: project_name,
         deskripsi: "Desc".to_string(),
-        status: "ongoing".to_string(),
+        status: "ONGOING".to_string(),
         progress: 0,
         link_demo: None,
         repository: None,
@@ -209,60 +211,60 @@ async fn test_update_portfolio() {
     let resp: SuccessResponse<ProjectResponseDto> = test::call_and_read_body_json(&app, req).await;
     let project_id = resp.data.unwrap().id;
 
-    // 2. Create Portfolio
-    let portfolio_title = format!("Portfolio 4 {}", Utc::now().timestamp_micros());
-    let create_portfolio_dto = CreatePortfolioRequestDto {
+    // 2. Create Portofolio
+    let portofolio_title = format!("Portofolio 4 {}", Utc::now().timestamp_micros());
+    let create_portofolio_dto = CreatePortofolioRequestDto {
         project_id,
-        judul: portfolio_title.clone(),
+        judul: portofolio_title.clone(),
         deskripsi: "Desc".to_string(),
         is_active: true,
     };
     let req = test::TestRequest::post()
-        .uri("/app/portfolios")
+        .uri("/app/portofolios")
         .insert_header(("Authorization", format!("Bearer {}", token)))
-        .set_json(&create_portfolio_dto)
+        .set_json(&create_portofolio_dto)
         .to_request();
-    let resp: SuccessResponse<PortfolioResponseDto> =
+    let resp: SuccessResponse<PortofolioResponseDto> =
         test::call_and_read_body_json(&app, req).await;
-    let portfolio_id = resp.data.unwrap().id;
+    let portofolio_id = resp.data.unwrap().id;
 
     // 3. Update
-    let update_title = format!("Portfolio Updated {}", Utc::now().timestamp_micros());
-    let update_dto = UpdatePortfolioRequestDto {
+    let update_title = format!("Portofolio Updated {}", Utc::now().timestamp_micros());
+    let update_dto = UpdatePortofolioRequestDto {
         project_id: project_id, // Keep existing implicitly by sending same ID
         judul: update_title.clone(),
         deskripsi: "Updated Desc".to_string(),
         is_active: false,
     };
     let req = test::TestRequest::put()
-        .uri(&format!("/app/portfolios/{}", portfolio_id))
+        .uri(&format!("/app/portofolios/{}", portofolio_id))
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&update_dto)
         .to_request();
-    let resp: SuccessResponse<PortfolioResponseDto> =
+    let resp: SuccessResponse<PortofolioResponseDto> =
         test::call_and_read_body_json(&app, req).await;
-    let portfolio = resp.data.unwrap();
+    let portofolio = resp.data.unwrap();
 
-    assert_eq!(portfolio.judul, update_title);
-    assert_eq!(portfolio.deskripsi, Some("Updated Desc".to_string()));
-    assert_eq!(portfolio.is_active, false);
+    assert_eq!(portofolio.judul, update_title);
+    assert_eq!(portofolio.deskripsi, Some("Updated Desc".to_string()));
+    assert_eq!(portofolio.is_active, false);
 
     // 4. Verify (Optional double check via Get, but Update response is trusted now)
     let req = test::TestRequest::get()
-        .uri(&format!("/app/portfolios/{}", portfolio_id))
+        .uri(&format!("/app/portofolios/{}", portofolio_id))
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
-    let resp: SuccessResponse<PortfolioResponseDto> =
+    let resp: SuccessResponse<PortofolioResponseDto> =
         test::call_and_read_body_json(&app, req).await;
-    let portfolio_get = resp.data.unwrap();
+    let portofolio_get = resp.data.unwrap();
 
-    assert_eq!(portfolio_get.judul, update_title);
-    assert_eq!(portfolio_get.is_active, false);
+    assert_eq!(portofolio_get.judul, update_title);
+    assert_eq!(portofolio_get.is_active, false);
 }
 
 #[actix_web::test]
 #[serial]
-async fn test_delete_portfolio() {
+async fn test_delete_portofolio() {
     let container = Container::new();
     seed_user(&container);
     let app = init_test_app!(&container);
@@ -273,7 +275,7 @@ async fn test_delete_portfolio() {
     let create_project_dto = CreateProjectRequestDto {
         nama_projek: project_name,
         deskripsi: "Desc".to_string(),
-        status: "ongoing".to_string(),
+        status: "ONGOING".to_string(),
         progress: 0,
         link_demo: None,
         repository: None,
@@ -289,26 +291,26 @@ async fn test_delete_portfolio() {
     let resp: SuccessResponse<ProjectResponseDto> = test::call_and_read_body_json(&app, req).await;
     let project_id = resp.data.unwrap().id;
 
-    // 2. Create Portfolio
-    let portfolio_title = format!("Portfolio 5 {}", Utc::now().timestamp_micros());
-    let create_portfolio_dto = CreatePortfolioRequestDto {
+    // 2. Create Portofolio
+    let portofolio_title = format!("Portofolio 5 {}", Utc::now().timestamp_micros());
+    let create_portofolio_dto = CreatePortofolioRequestDto {
         project_id,
-        judul: portfolio_title.clone(),
+        judul: portofolio_title.clone(),
         deskripsi: "Desc".to_string(),
         is_active: true,
     };
     let req = test::TestRequest::post()
-        .uri("/app/portfolios")
+        .uri("/app/portofolios")
         .insert_header(("Authorization", format!("Bearer {}", token)))
-        .set_json(&create_portfolio_dto)
+        .set_json(&create_portofolio_dto)
         .to_request();
-    let resp: SuccessResponse<PortfolioResponseDto> =
+    let resp: SuccessResponse<PortofolioResponseDto> =
         test::call_and_read_body_json(&app, req).await;
-    let portfolio_id = resp.data.unwrap().id;
+    let portofolio_id = resp.data.unwrap().id;
 
     // 3. Delete
     let req = test::TestRequest::delete()
-        .uri(&format!("/app/portfolios/{}", portfolio_id))
+        .uri(&format!("/app/portofolios/{}", portofolio_id))
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
     let resp = test::call_service(&app, req).await;
@@ -316,7 +318,7 @@ async fn test_delete_portfolio() {
 
     // 4. Verify Not Found
     let req = test::TestRequest::get()
-        .uri(&format!("/app/portfolios/{}", portfolio_id))
+        .uri(&format!("/app/portofolios/{}", portofolio_id))
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
     let resp = test::call_service(&app, req).await;
@@ -324,7 +326,7 @@ async fn test_delete_portfolio() {
 }
 #[actix_web::test]
 #[serial]
-async fn test_create_duplicate_portfolio() {
+async fn test_create_duplicate_portofolio() {
     let container = Container::new();
     seed_user(&container);
     let app = init_test_app!(&container);
@@ -335,7 +337,7 @@ async fn test_create_duplicate_portfolio() {
     let create_project_dto = CreateProjectRequestDto {
         nama_projek: project_name,
         deskripsi: "Desc".to_string(),
-        status: "ongoing".to_string(),
+        status: "ONGOING".to_string(),
         progress: 0,
         link_demo: None,
         repository: None,
@@ -351,28 +353,28 @@ async fn test_create_duplicate_portfolio() {
     let resp: SuccessResponse<ProjectResponseDto> = test::call_and_read_body_json(&app, req).await;
     let project_id = resp.data.unwrap().id;
 
-    // 2. Create Portfolio 1
-    let portfolio_title = format!("Portfolio Dup {}", Utc::now().timestamp_micros());
-    let create_portfolio_dto = CreatePortfolioRequestDto {
+    // 2. Create Portofolio 1
+    let portofolio_title = format!("Portofolio Dup {}", Utc::now().timestamp_micros());
+    let create_portofolio_dto = CreatePortofolioRequestDto {
         project_id,
-        judul: portfolio_title.clone(),
-        deskripsi: "Portfolio Desc".to_string(),
+        judul: portofolio_title.clone(),
+        deskripsi: "Portofolio Desc".to_string(),
         is_active: true,
     };
 
     let req = test::TestRequest::post()
-        .uri("/app/portfolios")
+        .uri("/app/portofolios")
         .insert_header(("Authorization", format!("Bearer {}", token)))
-        .set_json(&create_portfolio_dto)
+        .set_json(&create_portofolio_dto)
         .to_request();
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success());
 
-    // 3. Create Duplicate Portfolio
+    // 3. Create Duplicate Portofolio
     let req = test::TestRequest::post()
-        .uri("/app/portfolios")
+        .uri("/app/portofolios")
         .insert_header(("Authorization", format!("Bearer {}", token)))
-        .set_json(&create_portfolio_dto)
+        .set_json(&create_portofolio_dto)
         .to_request();
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status(), actix_web::http::StatusCode::BAD_REQUEST);
@@ -387,5 +389,5 @@ async fn test_create_duplicate_portfolio() {
 }
 
 fn common_validation_message() -> &'static str {
-    "Portfolio title already exists"
+    "Portofolio title already exists"
 }

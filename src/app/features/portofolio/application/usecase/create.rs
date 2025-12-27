@@ -1,59 +1,46 @@
-use crate::app::features::portfolio::domain::entity::NewPortfolio;
-use crate::app::features::portfolio::domain::error::PortfolioError;
-use crate::app::features::portfolio::domain::repository::PortfolioRepository;
-use crate::app::features::portfolio::interface::dto::{
-    PortfolioResponseDto, UpdatePortfolioRequestDto,
+use crate::app::features::portofolio::domain::entity::NewPortofolio;
+use crate::app::features::portofolio::domain::error::PortofolioError;
+use crate::app::features::portofolio::domain::repository::PortofolioRepository;
+use crate::app::features::portofolio::interface::dto::{
+    CreatePortofolioRequestDto, PortofolioResponseDto,
 };
 use crate::app::features::projects::interface::dto::ProjectResponseDto;
 use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Execute {
-    repository: Arc<dyn PortfolioRepository>,
+    repository: Arc<dyn PortofolioRepository>,
 }
 
 impl Execute {
-    pub fn new(repository: Arc<dyn PortfolioRepository>) -> Self {
+    pub fn new(repository: Arc<dyn PortofolioRepository>) -> Self {
         Self { repository }
     }
 
     pub fn execute(
         &self,
-        id: i32,
-        dto: UpdatePortfolioRequestDto,
-    ) -> Result<PortfolioResponseDto, PortfolioError> {
-        // Fetch existing
-        let (_existing, _, _) = self.repository.find_by_id(id).map_err(|e| {
-            if e.to_string().to_lowercase().contains("not found") {
-                PortfolioError::NotFound("Portfolio not found".to_string())
-            } else {
-                PortfolioError::System(e.to_string())
-            }
-        })?;
-
+        dto: CreatePortofolioRequestDto,
+    ) -> Result<PortofolioResponseDto, PortofolioError> {
         use validator::{ValidationError, ValidationErrors};
 
         let mut validation_errors = ValidationErrors::new();
 
-        if let Some(existing_portfolio) = self
+        if let Some(_existing) = self
             .repository
             .find_by_judul(dto.judul.clone())
-            .map_err(|e| PortfolioError::System(e.to_string()))?
+            .map_err(|e| PortofolioError::System(e.to_string()))?
         {
-            if existing_portfolio.id != id {
-                validation_errors.add(
-                    "judul",
-                    ValidationError::new("Portfolio title already exists"),
-                );
-            }
+            validation_errors.add(
+                "judul",
+                ValidationError::new("Portofolio title already exists"),
+            );
         }
 
         if !validation_errors.is_empty() {
-            return Err(PortfolioError::Validation(validation_errors));
+            return Err(PortofolioError::Validation(validation_errors));
         }
 
-        // Merge logic
-        let new_data = NewPortfolio {
+        let new_portfolio = NewPortofolio {
             project_id: dto.project_id,
             judul: dto.judul,
             deskripsi: Some(dto.deskripsi),
@@ -62,10 +49,10 @@ impl Execute {
 
         let (portfolio, project, stacks) = self
             .repository
-            .update(id, new_data)
-            .map_err(|e| PortfolioError::System(e.to_string()))?;
+            .create(new_portfolio)
+            .map_err(|e| PortofolioError::System(e.to_string()))?;
 
-        Ok(PortfolioResponseDto {
+        Ok(PortofolioResponseDto {
             id: portfolio.id,
             judul: portfolio.judul,
             deskripsi: portfolio.deskripsi,

@@ -1,29 +1,29 @@
-use crate::app::features::portfolio::domain::error::PortfolioError;
-use crate::app::features::portfolio::domain::repository::PortfolioRepository;
-use crate::app::features::portfolio::interface::dto::PortfolioResponseDto;
+use crate::app::features::portofolio::domain::error::PortofolioError;
+use crate::app::features::portofolio::domain::repository::PortofolioRepository;
+use crate::app::features::portofolio::interface::dto::PortofolioResponseDto;
 use crate::app::features::projects::interface::dto::ProjectResponseDto;
 use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Execute {
-    repository: Arc<dyn PortfolioRepository>,
+    repository: Arc<dyn PortofolioRepository>,
 }
 
 impl Execute {
-    pub fn new(repository: Arc<dyn PortfolioRepository>) -> Self {
+    pub fn new(repository: Arc<dyn PortofolioRepository>) -> Self {
         Self { repository }
     }
 
-    pub fn execute(&self, id: i32) -> Result<PortfolioResponseDto, PortfolioError> {
+    pub fn execute(&self, id: i32) -> Result<PortofolioResponseDto, PortofolioError> {
         let result = self.repository.find_by_id(id).map_err(|e| {
             if e.to_string().to_lowercase().contains("not found") {
-                PortfolioError::NotFound("Portfolio not found".to_string())
+                PortofolioError::NotFound("Portofolio not found".to_string())
             } else {
-                PortfolioError::System(e.to_string())
+                PortofolioError::System(e.to_string())
             }
         })?;
 
-        Ok(PortfolioResponseDto {
+        Ok(PortofolioResponseDto {
             id: result.0.id,
             judul: result.0.judul,
             deskripsi: result.0.deskripsi,

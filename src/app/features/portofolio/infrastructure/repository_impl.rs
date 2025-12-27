@@ -1,17 +1,17 @@
 use super::super::super::projects::domain::entity::{Project, Stack};
-use super::super::domain::entity::{NewPortfolio, Portfolio};
-use super::super::domain::repository::PortfolioRepository;
-use crate::schema::{portfolios, project_stack, projects, stacks};
+use super::super::domain::entity::{NewPortofolio, Portofolio};
+use super::super::domain::repository::PortofolioRepository;
+use crate::schema::{portofolios, project_stack, projects, stacks};
 use crate::utils::db::DbPool;
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
 use diesel::{QueryDsl, RunQueryDsl};
 
-pub struct PortfolioRepositoryImpl {
+pub struct PortofolioRepositoryImpl {
     pub pool: DbPool,
 }
 
-impl PortfolioRepositoryImpl {
+impl PortofolioRepositoryImpl {
     pub fn new(pool: DbPool) -> Self {
         Self { pool }
     }
@@ -29,13 +29,16 @@ impl PortfolioRepositoryImpl {
     }
 }
 
-impl PortfolioRepository for PortfolioRepositoryImpl {
-    fn create(&self, new_portfolio: NewPortfolio) -> QueryResult<(Portfolio, Project, Vec<Stack>)> {
+impl PortofolioRepository for PortofolioRepositoryImpl {
+    fn create(
+        &self,
+        new_portfolio: NewPortofolio,
+    ) -> QueryResult<(Portofolio, Project, Vec<Stack>)> {
         let mut conn = self.pool.get().expect("Failed to get db connection");
 
-        let portfolio: Portfolio = diesel::insert_into(portfolios::table)
+        let portfolio: Portofolio = diesel::insert_into(portofolios::table)
             .values(&new_portfolio)
-            .returning(Portfolio::as_returning())
+            .returning(Portofolio::as_returning())
             .get_result(&mut conn)?;
 
         let project: Project = projects::table
@@ -52,13 +55,13 @@ impl PortfolioRepository for PortfolioRepositoryImpl {
         &self,
         offset: i64,
         limit: i64,
-    ) -> QueryResult<(Vec<(Portfolio, Project, Vec<Stack>)>, i64)> {
+    ) -> QueryResult<(Vec<(Portofolio, Project, Vec<Stack>)>, i64)> {
         let mut conn = self.pool.get().expect("Failed to get db connection");
 
-        let items: Vec<(Portfolio, Project)> = portfolios::table
+        let items: Vec<(Portofolio, Project)> = portofolios::table
             .inner_join(projects::table)
-            .select((Portfolio::as_select(), Project::as_select()))
-            .order(portfolios::created_at.desc())
+            .select((Portofolio::as_select(), Project::as_select()))
+            .order(portofolios::created_at.desc())
             .offset(offset)
             .limit(limit)
             .load(&mut conn)?;
@@ -69,18 +72,18 @@ impl PortfolioRepository for PortfolioRepositoryImpl {
             results.push((portfolio, project, stacks));
         }
 
-        let total_count: i64 = portfolios::table.count().get_result(&mut conn)?;
+        let total_count: i64 = portofolios::table.count().get_result(&mut conn)?;
 
         Ok((results, total_count))
     }
 
-    fn find_by_id(&self, id: i32) -> QueryResult<(Portfolio, Project, Vec<Stack>)> {
+    fn find_by_id(&self, id: i32) -> QueryResult<(Portofolio, Project, Vec<Stack>)> {
         let mut conn = self.pool.get().expect("Failed to get db connection");
 
-        let (portfolio, project): (Portfolio, Project) = portfolios::table
+        let (portfolio, project): (Portofolio, Project) = portofolios::table
             .find(id)
             .inner_join(projects::table)
-            .select((Portfolio::as_select(), Project::as_select()))
+            .select((Portofolio::as_select(), Project::as_select()))
             .get_result(&mut conn)?;
 
         let stacks = self.get_stacks_for_project(&mut conn, project.id)?;
@@ -91,19 +94,19 @@ impl PortfolioRepository for PortfolioRepositoryImpl {
     fn update(
         &self,
         id: i32,
-        portfolio_data: NewPortfolio,
-    ) -> QueryResult<(Portfolio, Project, Vec<Stack>)> {
+        portfolio_data: NewPortofolio,
+    ) -> QueryResult<(Portofolio, Project, Vec<Stack>)> {
         let mut conn = self.pool.get().expect("Failed to get db connection");
 
-        let portfolio: Portfolio = diesel::update(portfolios::table.find(id))
+        let portfolio: Portofolio = diesel::update(portofolios::table.find(id))
             .set((
-                portfolios::project_id.eq(portfolio_data.project_id),
-                portfolios::judul.eq(portfolio_data.judul),
-                portfolios::deskripsi.eq(portfolio_data.deskripsi),
-                portfolios::is_active.eq(portfolio_data.is_active),
-                portfolios::updated_at.eq(diesel::dsl::now),
+                portofolios::project_id.eq(portfolio_data.project_id),
+                portofolios::judul.eq(portfolio_data.judul),
+                portofolios::deskripsi.eq(portfolio_data.deskripsi),
+                portofolios::is_active.eq(portfolio_data.is_active),
+                portofolios::updated_at.eq(diesel::dsl::now),
             ))
-            .returning(Portfolio::as_returning())
+            .returning(Portofolio::as_returning())
             .get_result(&mut conn)?;
 
         let project: Project = projects::table
@@ -119,14 +122,14 @@ impl PortfolioRepository for PortfolioRepositoryImpl {
     fn delete(&self, id: i32) -> QueryResult<usize> {
         let mut conn = self.pool.get().expect("Failed to get db connection");
 
-        diesel::delete(portfolios::table.find(id)).execute(&mut conn)
+        diesel::delete(portofolios::table.find(id)).execute(&mut conn)
     }
 
-    fn find_by_judul(&self, judul: String) -> QueryResult<Option<Portfolio>> {
+    fn find_by_judul(&self, judul: String) -> QueryResult<Option<Portofolio>> {
         let mut conn = self.pool.get().expect("Failed to get db connection");
 
-        portfolios::table
-            .filter(portfolios::judul.eq(judul))
+        portofolios::table
+            .filter(portofolios::judul.eq(judul))
             .first(&mut conn)
             .optional()
     }

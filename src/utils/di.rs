@@ -11,9 +11,9 @@ use crate::app::features::blog::infrastructure::repository_impl::BlogRepositoryI
 use crate::app::features::home::domain::repository::CountRepository;
 
 use crate::app::features::home::infrastructure::repository_impl::CountRepositoryImpl;
-use crate::app::features::portfolio::application::usecase as portfolio_usecase;
-use crate::app::features::portfolio::domain::repository::PortfolioRepository;
-use crate::app::features::portfolio::infrastructure::repository_impl::PortfolioRepositoryImpl;
+use crate::app::features::portofolio::application::usecase as portofolio_usecase;
+use crate::app::features::portofolio::domain::repository::PortofolioRepository;
+use crate::app::features::portofolio::infrastructure::repository_impl::PortofolioRepositoryImpl;
 use crate::app::features::profile::application::usecase as profile_usecase;
 use crate::app::features::profile::domain::repository::ProfileRepository;
 use crate::app::features::profile::infrastructure::repository_impl::ProfileRepositoryImpl;
@@ -59,11 +59,11 @@ pub struct Container {
     pub get_stack_usecase: stack_usecase::get::Execute,
     pub update_stack_usecase: stack_usecase::update::Execute,
     pub delete_stack_usecase: stack_usecase::delete::Execute,
-    pub portfolio_create_usecase: portfolio_usecase::create::Execute,
-    pub portfolio_get_all_usecase: portfolio_usecase::get_all::Execute,
-    pub portfolio_get_usecase: portfolio_usecase::get::Execute,
-    pub portfolio_update_usecase: portfolio_usecase::update::Execute,
-    pub portfolio_delete_usecase: portfolio_usecase::delete::Execute,
+    pub portofolio_create_usecase: portofolio_usecase::create::Execute,
+    pub portofolio_get_all_usecase: portofolio_usecase::get_all::Execute,
+    pub portofolio_get_usecase: portofolio_usecase::get::Execute,
+    pub portofolio_update_usecase: portofolio_usecase::update::Execute,
+    pub portofolio_delete_usecase: portofolio_usecase::delete::Execute,
     pub get_profile_usecase: profile_usecase::get::Execute,
     pub upsert_profile_usecase: profile_usecase::upsert::Execute,
 }
@@ -135,19 +135,19 @@ impl Container {
         let update_stack_usecase = stack_usecase::update::Execute::new(project_repository.clone());
         let delete_stack_usecase = stack_usecase::delete::Execute::new(project_repository.clone());
 
-        let portfolio_repository: Arc<dyn PortfolioRepository + Send + Sync> =
-            Arc::new(PortfolioRepositoryImpl::new(pool.clone()));
+        let portofolio_repository: Arc<dyn PortofolioRepository + Send + Sync> =
+            Arc::new(PortofolioRepositoryImpl::new(pool.clone()));
 
-        let portfolio_create_usecase =
-            portfolio_usecase::create::Execute::new(portfolio_repository.clone());
-        let portfolio_get_all_usecase =
-            portfolio_usecase::get_all::Execute::new(portfolio_repository.clone());
-        let portfolio_get_usecase =
-            portfolio_usecase::get::Execute::new(portfolio_repository.clone());
-        let portfolio_update_usecase =
-            portfolio_usecase::update::Execute::new(portfolio_repository.clone());
-        let portfolio_delete_usecase =
-            portfolio_usecase::delete::Execute::new(portfolio_repository.clone());
+        let portofolio_create_usecase =
+            portofolio_usecase::create::Execute::new(portofolio_repository.clone());
+        let portofolio_get_all_usecase =
+            portofolio_usecase::get_all::Execute::new(portofolio_repository.clone());
+        let portofolio_get_usecase =
+            portofolio_usecase::get::Execute::new(portofolio_repository.clone());
+        let portofolio_update_usecase =
+            portofolio_usecase::update::Execute::new(portofolio_repository.clone());
+        let portofolio_delete_usecase =
+            portofolio_usecase::delete::Execute::new(portofolio_repository.clone());
 
         let profile_repository: Arc<dyn ProfileRepository + Send + Sync> =
             Arc::new(ProfileRepositoryImpl::new(pool.clone()));
@@ -187,11 +187,11 @@ impl Container {
             get_stack_usecase,
             update_stack_usecase,
             delete_stack_usecase,
-            portfolio_create_usecase,
-            portfolio_get_all_usecase,
-            portfolio_get_usecase,
-            portfolio_update_usecase,
-            portfolio_delete_usecase,
+            portofolio_create_usecase,
+            portofolio_get_all_usecase,
+            portofolio_get_usecase,
+            portofolio_update_usecase,
+            portofolio_delete_usecase,
             get_profile_usecase,
             upsert_profile_usecase,
         }

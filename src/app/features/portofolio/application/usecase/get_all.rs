@@ -1,25 +1,25 @@
-use crate::app::features::portfolio::domain::error::PortfolioError;
-use crate::app::features::portfolio::domain::repository::PortfolioRepository;
-use crate::app::features::portfolio::interface::dto::{
-    MetaDto, PaginatedResponseDto, PaginationRequestDto, PortfolioResponseDto,
+use crate::app::features::portofolio::domain::error::PortofolioError;
+use crate::app::features::portofolio::domain::repository::PortofolioRepository;
+use crate::app::features::portofolio::interface::dto::{
+    MetaDto, PaginatedResponseDto, PaginationRequestDto, PortofolioResponseDto,
 };
 use crate::app::features::projects::interface::dto::ProjectResponseDto;
 use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Execute {
-    repository: Arc<dyn PortfolioRepository>,
+    repository: Arc<dyn PortofolioRepository>,
 }
 
 impl Execute {
-    pub fn new(repository: Arc<dyn PortfolioRepository>) -> Self {
+    pub fn new(repository: Arc<dyn PortofolioRepository>) -> Self {
         Self { repository }
     }
 
     pub fn execute(
         &self,
         query: PaginationRequestDto,
-    ) -> Result<PaginatedResponseDto<PortfolioResponseDto>, PortfolioError> {
+    ) -> Result<PaginatedResponseDto<PortofolioResponseDto>, PortofolioError> {
         let page = query.page.unwrap_or(1);
         let per_page = query.per_page.unwrap_or(10);
         let offset = (page - 1) * per_page;
@@ -27,13 +27,13 @@ impl Execute {
         let (items, total_count) = self
             .repository
             .find_all(offset, per_page)
-            .map_err(|e| PortfolioError::System(e.to_string()))?;
+            .map_err(|e| PortofolioError::System(e.to_string()))?;
 
         let total_pages = (total_count as f64 / per_page as f64).ceil() as i64;
 
-        let response_items: Vec<PortfolioResponseDto> = items
+        let response_items: Vec<PortofolioResponseDto> = items
             .into_iter()
-            .map(|(item, project, stacks)| PortfolioResponseDto {
+            .map(|(item, project, stacks)| PortofolioResponseDto {
                 id: item.id,
                 judul: item.judul,
                 deskripsi: item.deskripsi,

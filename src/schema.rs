@@ -41,7 +41,7 @@ diesel::table! {
 }
 
 diesel::table! {
-    portfolios (id) {
+    portofolios (id) {
         id -> Integer,
         project_id -> Integer,
         judul -> Text,
@@ -151,7 +151,7 @@ diesel::table! {
 diesel::joinable!(blog -> categories (category_id));
 diesel::joinable!(blog_tags -> blog (blog_id));
 diesel::joinable!(blog_tags -> tags (tag_id));
-diesel::joinable!(portfolios -> projects (project_id));
+diesel::joinable!(portofolios -> projects (project_id));
 diesel::joinable!(profile_languages -> profiles (profile_id));
 diesel::joinable!(profile_specializations -> profiles (profile_id));
 diesel::joinable!(profile_tech_focus -> profiles (profile_id));
@@ -163,7 +163,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     blog_tags,
     categories,
     counts,
-    portfolios,
+    portofolios,
     profile_languages,
     profile_specializations,
     profile_tech_focus,

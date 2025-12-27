@@ -93,7 +93,7 @@ async fn test_create_project() {
     let create_dto = CreateProjectRequestDto {
         nama_projek: project_name.clone(),
         deskripsi: "Desc".to_string(),
-        status: "draft".to_string(),
+        status: "DRAFT".to_string(),
         progress: 0,
         link_demo: None,
         repository: None,
@@ -127,7 +127,7 @@ async fn test_get_projects() {
     let create_dto = CreateProjectRequestDto {
         nama_projek: format!("Project List {}", Utc::now().timestamp_micros()),
         deskripsi: "Desc".to_string(),
-        status: "ongoing".to_string(),
+        status: "ONGOING".to_string(),
         progress: 10,
         link_demo: None,
         repository: None,
@@ -166,7 +166,7 @@ async fn test_get_project_by_id() {
     let create_dto = CreateProjectRequestDto {
         nama_projek: project_name.clone(),
         deskripsi: "Desc".to_string(),
-        status: "ongoing".to_string(),
+        status: "ONGOING".to_string(),
         progress: 0,
         link_demo: None,
         repository: None,
@@ -203,7 +203,7 @@ async fn test_update_project() {
     let create_dto = CreateProjectRequestDto {
         nama_projek: format!("Project Update {}", Utc::now().timestamp_micros()),
         deskripsi: "Desc".to_string(),
-        status: "draft".to_string(),
+        status: "DRAFT".to_string(),
         progress: 0,
         link_demo: None,
         repository: None,
@@ -223,7 +223,7 @@ async fn test_update_project() {
     let update_dto = UpdateProjectRequestDto {
         nama_projek: updated_name.clone(),
         deskripsi: "Desc".to_string(),
-        status: "completed".to_string(),
+        status: "COMPLETED".to_string(),
         progress: Some(100),
         link_demo: None,
         repository: None,
@@ -241,7 +241,7 @@ async fn test_update_project() {
     let updated = resp.data.unwrap();
 
     assert_eq!(updated.nama_projek, updated_name);
-    assert_eq!(updated.status, "completed");
+    assert_eq!(updated.status, "COMPLETED");
     assert_eq!(updated.progress, 100);
 }
 
@@ -256,7 +256,7 @@ async fn test_delete_project() {
     let create_dto = CreateProjectRequestDto {
         nama_projek: format!("Project Delete {}", Utc::now().timestamp_micros()),
         deskripsi: "Desc".to_string(),
-        status: "draft".to_string(),
+        status: "DRAFT".to_string(),
         progress: 0,
         link_demo: None,
         repository: None,
@@ -326,7 +326,7 @@ async fn test_project_stack_flow() {
     let create_dto = CreateProjectRequestDto {
         nama_projek: project_name.clone(),
         deskripsi: "Flow Desc".to_string(),
-        status: "ongoing".to_string(),
+        status: "ONGOING".to_string(),
         progress: 50,
         link_demo: None,
         repository: None,
@@ -351,7 +351,7 @@ async fn test_project_stack_flow() {
     let update_dto = UpdateProjectRequestDto {
         nama_projek: project_name.clone(), // Keep original name
         deskripsi: "Flow Desc".to_string(),
-        status: "completed".to_string(),
+        status: "COMPLETED".to_string(),
         progress: Some(100),
         link_demo: None,
         repository: None,
@@ -370,7 +370,7 @@ async fn test_project_stack_flow() {
 
     assert_eq!(updated.stacks.len(), 1);
     assert_eq!(updated.stacks[0].id, stack1_id);
-    assert_eq!(updated.status, "completed");
+    assert_eq!(updated.status, "COMPLETED");
 }
 
 #[actix_web::test]
@@ -489,7 +489,7 @@ async fn test_create_duplicate_project() {
     let create_dto = CreateProjectRequestDto {
         nama_projek: project_name.clone(),
         deskripsi: "Desc".to_string(),
-        status: "draft".to_string(),
+        status: "DRAFT".to_string(),
         progress: 0,
         link_demo: None,
         repository: None,

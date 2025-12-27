@@ -45,12 +45,12 @@ use utoipa::{
         crate::app::features::projects::interface::controller::get_stack,
         crate::app::features::projects::interface::controller::update_stack,
         crate::app::features::projects::interface::controller::delete_stack,
-        // Portfolios
-        crate::app::features::portfolio::interface::controller::create_portfolio,
-        crate::app::features::portfolio::interface::controller::get_all_portfolios,
-        crate::app::features::portfolio::interface::controller::get_portfolio,
-        crate::app::features::portfolio::interface::controller::update_portfolio,
-        crate::app::features::portfolio::interface::controller::delete_portfolio,
+        // Portofolios
+        crate::app::features::portofolio::interface::controller::create_portfolio,
+        crate::app::features::portofolio::interface::controller::get_all_portfolios,
+        crate::app::features::portofolio::interface::controller::get_portfolio,
+        crate::app::features::portofolio::interface::controller::update_portfolio,
+        crate::app::features::portofolio::interface::controller::delete_portfolio,
         // Profile
         crate::app::features::profile::interface::controller::get_profile,
         crate::app::features::profile::interface::controller::upsert_profile,
@@ -81,10 +81,10 @@ use utoipa::{
             crate::app::features::projects::interface::dto::UpdateStackRequestDto,
             crate::app::features::projects::interface::dto::UpdateStackRequestDto,
             crate::app::features::projects::interface::dto::StackResponseDto,
-            // Portfolios
-            crate::app::features::portfolio::interface::dto::CreatePortfolioRequestDto,
-            crate::app::features::portfolio::interface::dto::UpdatePortfolioRequestDto,
-            crate::app::features::portfolio::interface::dto::PortfolioResponseDto,
+            // Portofolios
+            crate::app::features::portofolio::interface::dto::CreatePortofolioRequestDto,
+            crate::app::features::portofolio::interface::dto::UpdatePortofolioRequestDto,
+            crate::app::features::portofolio::interface::dto::PortofolioResponseDto,
             // Profile
             crate::app::features::profile::interface::dto::UpsertProfileRequestDto,
             crate::app::features::profile::interface::dto::ProfileResponseDto,
@@ -100,7 +100,7 @@ use utoipa::{
         (name = "Home", description = "Home endpoints"),
         (name = "Blog", description = "Blog management"),
         (name = "Projects", description = "Project portfolio management"),
-        (name = "Portfolios", description = "Individual portfolio items"),
+        (name = "Portofolios", description = "Individual portofolio items"),
         (name = "Profile", description = "User profile management"),
     ),
     info(
