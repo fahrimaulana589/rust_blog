@@ -202,13 +202,21 @@ pub async fn create_stack(
         return HttpResponse::BadRequest().json(map_validation_error(e));
     }
 
+    use crate::app::features::projects::domain::error::ProjectError;
+
     match data.create_stack_usecase.execute(payload.into_inner()) {
         Ok(res) => HttpResponse::Created().json(SuccessResponse::new(
             "Stack created successfully".to_string(),
             Some(res),
         )),
-        Err(e) => HttpResponse::InternalServerError()
-            .json(crate::utils::error_response::map_string_error(e)),
+        Err(e) => match e {
+            ProjectError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),
+            ProjectError::NotFound(msg) => {
+                HttpResponse::NotFound().json(crate::utils::error_response::map_string_error(msg))
+            }
+            ProjectError::System(msg) => HttpResponse::InternalServerError()
+                .json(crate::utils::error_response::map_string_error(msg)),
+        },
     }
 }
 
@@ -296,19 +304,21 @@ pub async fn update_stack(
         return HttpResponse::BadRequest().json(map_validation_error(e));
     }
 
+    use crate::app::features::projects::domain::error::ProjectError;
+
     match data.update_stack_usecase.execute(id, payload.into_inner()) {
         Ok(res) => HttpResponse::Ok().json(SuccessResponse::new(
             "Stack updated successfully".to_string(),
             Some(res),
         )),
-        Err(e) => {
-            if e.contains("not found") {
-                HttpResponse::NotFound().json(crate::utils::error_response::map_string_error(e))
-            } else {
-                HttpResponse::InternalServerError()
-                    .json(crate::utils::error_response::map_string_error(e))
+        Err(e) => match e {
+            ProjectError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),
+            ProjectError::NotFound(msg) => {
+                HttpResponse::NotFound().json(crate::utils::error_response::map_string_error(msg))
             }
-        }
+            ProjectError::System(msg) => HttpResponse::InternalServerError()
+                .json(crate::utils::error_response::map_string_error(msg)),
+        },
     }
 }
 

@@ -524,3 +524,101 @@ async fn test_create_duplicate_project() {
         "Project name already exists"
     );
 }
+
+#[actix_web::test]
+#[serial]
+async fn test_create_duplicate_stack() {
+    let container = Container::new();
+    seed_user(&container);
+    let app = init_test_app!(&container);
+    let token = login_admin(&app, &container).await;
+
+    let stack_name = format!("Unique Stack {}", Utc::now().timestamp_micros());
+    let create_dto = CreateStackRequestDto {
+        nama_stack: stack_name.clone(),
+    };
+
+    // First Create (Success)
+    let req = test::TestRequest::post()
+        .uri("/app/stacks")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&create_dto)
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success());
+
+    // Second Create (Fail)
+    let req = test::TestRequest::post()
+        .uri("/app/stacks")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&create_dto)
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+
+    // Verify error message
+    let body: ErrorResponse = test::read_body_json(resp).await;
+    assert_eq!(body.message, "Validation Error");
+    assert!(body.errors.is_some());
+    assert_eq!(
+        body.errors.unwrap().get("nama_stack").unwrap(),
+        "Stack name already exists"
+    );
+}
+
+#[actix_web::test]
+#[serial]
+async fn test_update_stack_duplicate_name() {
+    let container = Container::new();
+    seed_user(&container);
+    let app = init_test_app!(&container);
+    let token = login_admin(&app, &container).await;
+
+    // Create Stack 1
+    let stack1_name = format!("Stack 1 {}", Utc::now().timestamp_micros());
+    let req = test::TestRequest::post()
+        .uri("/app/stacks")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&CreateStackRequestDto {
+            nama_stack: stack1_name.clone(),
+        })
+        .to_request();
+    let resp: SuccessResponse<StackResponseDto> = test::call_and_read_body_json(&app, req).await;
+    let _stack1_id = resp.data.unwrap().id;
+
+    // Create Stack 2
+    let stack2_name = format!("Stack 2 {}", Utc::now().timestamp_micros());
+    let req = test::TestRequest::post()
+        .uri("/app/stacks")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&CreateStackRequestDto {
+            nama_stack: stack2_name.clone(),
+        })
+        .to_request();
+    let resp: SuccessResponse<StackResponseDto> = test::call_and_read_body_json(&app, req).await;
+    let stack2_id = resp.data.unwrap().id;
+
+    // Update Stack 2 with Stack 1's name (Should Fail)
+    let update_dto = UpdateStackRequestDto {
+        nama_stack: stack1_name.clone(),
+    };
+
+    let req = test::TestRequest::put()
+        .uri(&format!("/app/stacks/{}", stack2_id))
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&update_dto)
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+
+    // Currently this will PASS (status success) because we haven't implemented the check yet.
+    // So we assert failure to demonstrate the "bug" (missing feature).
+    // Once fixed, this assert should pass (response is failure).
+
+    // Verify error message
+    let body: ErrorResponse = test::read_body_json(resp).await;
+    assert_eq!(body.message, "Validation Error");
+    assert!(body.errors.is_some());
+    assert_eq!(
+        body.errors.unwrap().get("nama_stack").unwrap(),
+        "Stack name already exists"
+    );
+}

@@ -1,7 +1,9 @@
-use crate::app::features::projects::domain::entity::NewStack;
-use crate::app::features::projects::domain::repository::ProjectRepository;
+use crate::app::features::projects::domain::{
+    entity::NewStack, error::ProjectError, repository::ProjectRepository,
+};
 use crate::app::features::projects::interface::dto::{CreateStackRequestDto, StackResponseDto};
 use std::sync::Arc;
+use validator::{ValidationError, ValidationErrors};
 
 #[derive(Clone)]
 pub struct Execute {
@@ -13,15 +15,19 @@ impl Execute {
         Self { repository }
     }
 
-    pub fn execute(&self, dto: CreateStackRequestDto) -> Result<StackResponseDto, String> {
+    pub fn execute(&self, dto: CreateStackRequestDto) -> Result<StackResponseDto, ProjectError> {
         // Check uniqueness
         if self
             .repository
             .get_stack_by_name(&dto.nama_stack)
-            .map_err(|e| e.to_string())?
+            .map_err(|e| ProjectError::System(e.to_string()))?
             .is_some()
         {
-            return Err("Stack name already exists".to_string());
+            let mut errors = ValidationErrors::new();
+            let mut err = ValidationError::new("nama_stack");
+            err.message = Some("Stack name already exists".into());
+            errors.add("nama_stack", err);
+            return Err(ProjectError::Validation(errors));
         }
 
         let new_stack = NewStack {
@@ -31,7 +37,7 @@ impl Execute {
         let stack = self
             .repository
             .create_stack(new_stack)
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| ProjectError::System(e.to_string()))?;
 
         Ok(StackResponseDto {
             id: stack.id,
