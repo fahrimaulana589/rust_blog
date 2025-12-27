@@ -5,6 +5,7 @@ use crate::app::features::blog::interface::dto::{
 use crate::init_test_app;
 use crate::test::helpers::{login_admin, seed_user};
 use crate::utils::di::Container;
+use crate::utils::error_response::ErrorResponse;
 use crate::utils::success_response::SuccessResponse;
 use actix_web::test;
 use chrono::Utc;
@@ -488,4 +489,84 @@ async fn test_update_blog_empty_title_validation() {
         .to_request();
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status(), actix_web::http::StatusCode::BAD_REQUEST);
+}
+
+#[actix_web::test]
+#[serial]
+async fn test_create_duplicate_category() {
+    let container = Container::new();
+    seed_user(&container);
+    let app = init_test_app!(&container);
+    let token = login_admin(&app, &container).await;
+
+    let category_name = format!("Unique Cat {}", Utc::now().timestamp_micros());
+    let category_dto = CreateCategoryRequestDto {
+        name: category_name.clone(),
+    };
+
+    // First Create (Success)
+    let req = test::TestRequest::post()
+        .uri("/app/categories")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&category_dto)
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success());
+
+    // Second Create (Fail)
+    let req = test::TestRequest::post()
+        .uri("/app/categories")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&category_dto)
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert_eq!(resp.status(), actix_web::http::StatusCode::BAD_REQUEST);
+
+    // Check error message
+    let body: ErrorResponse = test::read_body_json(resp).await;
+    assert!(body.errors.is_some());
+    assert_eq!(
+        body.errors.unwrap().get("name").unwrap(),
+        "Category name already exists"
+    );
+}
+
+#[actix_web::test]
+#[serial]
+async fn test_create_duplicate_tag() {
+    let container = Container::new();
+    seed_user(&container);
+    let app = init_test_app!(&container);
+    let token = login_admin(&app, &container).await;
+
+    let tag_name = format!("Unique Tag {}", Utc::now().timestamp_micros());
+    let tag_dto = CreateTagRequestDto {
+        name: tag_name.clone(),
+    };
+
+    // First Create (Success)
+    let req = test::TestRequest::post()
+        .uri("/app/tags")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&tag_dto)
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success());
+
+    // Second Create (Fail)
+    let req = test::TestRequest::post()
+        .uri("/app/tags")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&tag_dto)
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert_eq!(resp.status(), actix_web::http::StatusCode::BAD_REQUEST);
+
+    // Check error message
+    let body: ErrorResponse = test::read_body_json(resp).await;
+    assert!(body.errors.is_some());
+    assert_eq!(
+        body.errors.unwrap().get("name").unwrap(),
+        "Tag name already exists"
+    );
 }

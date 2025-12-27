@@ -5,9 +5,10 @@ use crate::app::features::blog::interface::dto::{
 };
 use crate::utils::di::Container;
 use crate::utils::error_response::{ErrorResponse, map_string_error, map_validation_error};
-use crate::utils::success_response::{map_success_response, map_success_with_data};
+use crate::utils::success_response::{
+    Empty, SuccessResponse, map_success_response, map_success_with_data,
+};
 use actix_web::{HttpResponse, Responder, delete, get, post, put, web};
-use validator::Validate;
 
 #[utoipa::path(
     path = "/app/categories",
@@ -24,9 +25,7 @@ pub async fn create_category(
     container: web::Data<Container>,
     payload: web::Json<CreateCategoryRequestDto>,
 ) -> impl Responder {
-    if let Err(e) = payload.validate() {
-        return HttpResponse::BadRequest().json(map_validation_error(e));
-    }
+    use crate::app::features::blog::domain::error::BlogError;
     match container
         .create_category_usecase
         .execute(payload.into_inner())
@@ -35,7 +34,13 @@ pub async fn create_category(
         Ok(_) => HttpResponse::Ok().json(map_success_response(
             "Category created successfully".to_string(),
         )),
-        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+        Err(e) => match e {
+            BlogError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),
+            BlogError::NotFound(msg) => HttpResponse::NotFound().json(map_string_error(msg)),
+            BlogError::System(msg) => {
+                HttpResponse::InternalServerError().json(map_string_error(msg))
+            }
+        },
     }
 }
 
@@ -99,17 +104,16 @@ pub async fn get_category(container: web::Data<Container>, id: web::Path<i32>) -
 }
 
 #[utoipa::path(
+    put,
     path = "/app/categories/{id}",
-    tag = "Blog",
-    params(
-        ("id", description = "Category ID")
-    ),
+    tag = "Category",
     request_body = UpdateCategoryRequestDto,
     responses(
-        (status = 200, description = "Category updated", body = crate::utils::success_response::SuccessResponse<CategoryResponseDto>),
+        (status = 200, description = "Category updated successfully", body = SuccessResponse<Empty>),
         (status = 400, description = "Validation error", body = ErrorResponse),
         (status = 500, description = "Internal server error")
-    )
+    ),
+    security(("jwt" = []))
 )]
 #[put("/categories/{id}")]
 pub async fn update_category(
@@ -117,9 +121,7 @@ pub async fn update_category(
     id: web::Path<i32>,
     payload: web::Json<UpdateCategoryRequestDto>,
 ) -> impl Responder {
-    if let Err(e) = payload.validate() {
-        return HttpResponse::BadRequest().json(map_validation_error(e));
-    }
+    use crate::app::features::blog::domain::error::BlogError;
     match container
         .update_category_usecase
         .execute(id.into_inner(), payload.into_inner())
@@ -128,7 +130,13 @@ pub async fn update_category(
         Ok(_) => HttpResponse::Ok().json(map_success_response(
             "Category updated successfully".to_string(),
         )),
-        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+        Err(e) => match e {
+            BlogError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),
+            BlogError::NotFound(msg) => HttpResponse::NotFound().json(map_string_error(msg)),
+            BlogError::System(msg) => {
+                HttpResponse::InternalServerError().json(map_string_error(msg))
+            }
+        },
     }
 }
 
@@ -182,9 +190,7 @@ pub async fn create_tag(
     container: web::Data<Container>,
     payload: web::Json<CreateTagRequestDto>,
 ) -> impl Responder {
-    if let Err(e) = payload.validate() {
-        return HttpResponse::BadRequest().json(map_validation_error(e));
-    }
+    use crate::app::features::blog::domain::error::BlogError;
     match container
         .create_tag_usecase
         .execute(payload.into_inner())
@@ -193,7 +199,13 @@ pub async fn create_tag(
         Ok(_) => {
             HttpResponse::Ok().json(map_success_response("Tag created successfully".to_string()))
         }
-        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+        Err(e) => match e {
+            BlogError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),
+            BlogError::NotFound(msg) => HttpResponse::NotFound().json(map_string_error(msg)),
+            BlogError::System(msg) => {
+                HttpResponse::InternalServerError().json(map_string_error(msg))
+            }
+        },
     }
 }
 
@@ -249,17 +261,16 @@ pub async fn get_tag(container: web::Data<Container>, id: web::Path<i32>) -> imp
 }
 
 #[utoipa::path(
+    put,
     path = "/app/tags/{id}",
-    tag = "Blog",
-    params(
-        ("id", description = "Tag ID")
-    ),
+    tag = "Tag",
     request_body = UpdateTagRequestDto,
     responses(
-        (status = 200, description = "Tag updated", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>),
+        (status = 200, description = "Tag updated successfully", body = SuccessResponse<Empty>),
         (status = 400, description = "Validation error", body = ErrorResponse),
         (status = 500, description = "Internal server error")
-    )
+    ),
+    security(("jwt" = []))
 )]
 #[put("/tags/{id}")]
 pub async fn update_tag(
@@ -267,9 +278,7 @@ pub async fn update_tag(
     id: web::Path<i32>,
     payload: web::Json<UpdateTagRequestDto>,
 ) -> impl Responder {
-    if let Err(e) = payload.validate() {
-        return HttpResponse::BadRequest().json(map_validation_error(e));
-    }
+    use crate::app::features::blog::domain::error::BlogError;
     match container
         .update_tag_usecase
         .execute(id.into_inner(), payload.into_inner())
@@ -278,7 +287,13 @@ pub async fn update_tag(
         Ok(_) => {
             HttpResponse::Ok().json(map_success_response("Tag updated successfully".to_string()))
         }
-        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+        Err(e) => match e {
+            BlogError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),
+            BlogError::NotFound(msg) => HttpResponse::NotFound().json(map_string_error(msg)),
+            BlogError::System(msg) => {
+                HttpResponse::InternalServerError().json(map_string_error(msg))
+            }
+        },
     }
 }
 

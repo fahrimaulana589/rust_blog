@@ -197,4 +197,26 @@ impl BlogRepository for BlogRepositoryImpl {
             .first::<Blog>(&mut conn)
             .optional()
     }
+
+    fn get_category_by_name(&self, name: String) -> QueryResult<Option<Category>> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        categories::table
+            .filter(categories::name.eq(name))
+            .first::<Category>(&mut conn)
+            .optional()
+    }
+
+    fn get_tag_by_name(&self, name: String) -> QueryResult<Option<Tag>> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        tags::table
+            .filter(tags::name.eq(name))
+            .first::<Tag>(&mut conn)
+            .optional()
+    }
 }
