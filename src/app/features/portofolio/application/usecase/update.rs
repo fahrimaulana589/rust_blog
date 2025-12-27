@@ -100,6 +100,7 @@ impl Execute {
                     .collect(),
                 created_at: project.created_at.to_string(),
                 updated_at: project.updated_at.to_string(),
+                slug: project.slug,
             },
         })
     }

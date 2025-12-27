@@ -38,6 +38,26 @@ impl Execute {
             );
         }
 
+        let slug = dto
+            .nama_projek
+            .to_lowercase()
+            .replace(" ", "-")
+            .chars()
+            .filter(|c| c.is_alphanumeric() || *c == '-')
+            .collect::<String>();
+
+        if self
+            .repository
+            .get_project_by_slug(slug.clone())
+            .map_err(|e| ProjectError::System(e.to_string()))?
+            .is_some()
+        {
+            validation_errors.add(
+                "nama_projek",
+                ValidationError::new("Slug derived from name already exists"),
+            );
+        }
+
         if !validation_errors.is_empty() {
             return Err(ProjectError::Validation(validation_errors));
         }
@@ -65,6 +85,7 @@ impl Execute {
             repository: dto.repository,
             tanggal_mulai,
             tanggal_selesai,
+            slug: slug.clone(),
         };
 
         // Transaction logic should be here ideally, but for now we do sequential insert
@@ -107,6 +128,7 @@ impl Execute {
             stacks: stack_dtos,
             created_at: created_project.created_at.to_string(),
             updated_at: created_project.updated_at.to_string(),
+            slug: created_project.slug,
         })
     }
 }

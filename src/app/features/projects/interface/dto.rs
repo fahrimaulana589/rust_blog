@@ -97,4 +97,5 @@ pub struct ProjectResponseDto {
     pub stacks: Vec<StackResponseDto>,
     pub created_at: String,
     pub updated_at: String,
+    pub slug: String,
 }

@@ -60,6 +60,7 @@ impl ProjectRepository for ProjectRepositoryImpl {
                 projects::repository.eq(project.repository),
                 projects::tanggal_mulai.eq(project.tanggal_mulai),
                 projects::tanggal_selesai.eq(project.tanggal_selesai),
+                projects::slug.eq(project.slug),
                 projects::updated_at.eq(chrono::Utc::now().naive_utc()),
             ))
             .get_result(&mut conn)
@@ -74,6 +75,14 @@ impl ProjectRepository for ProjectRepositoryImpl {
         let mut conn = self.pool.get().unwrap();
         projects::table
             .filter(projects::nama_projek.eq(name))
+            .first::<Project>(&mut conn)
+            .optional()
+    }
+
+    fn get_project_by_slug(&self, slug: String) -> QueryResult<Option<Project>> {
+        let mut conn = self.pool.get().unwrap();
+        projects::table
+            .filter(projects::slug.eq(slug))
             .first::<Project>(&mut conn)
             .optional()
     }

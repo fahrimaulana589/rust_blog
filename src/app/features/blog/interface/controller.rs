@@ -107,7 +107,7 @@ pub async fn get_category(container: web::Data<Container>, id: web::Path<i32>) -
 #[utoipa::path(
     put,
     path = "/app/categories/{id}",
-    tag = "Category",
+    tag = "Blog",
     request_body = UpdateCategoryRequestDto,
     responses(
         (status = 200, description = "Category updated successfully", body = SuccessResponse<CategoryResponseDto>),
@@ -266,7 +266,7 @@ pub async fn get_tag(container: web::Data<Container>, id: web::Path<i32>) -> imp
 #[utoipa::path(
     put,
     path = "/app/tags/{id}",
-    tag = "Tag",
+    tag = "Blog",
     request_body = UpdateTagRequestDto,
     responses(
         (status = 200, description = "Tag updated successfully", body = SuccessResponse<TagResponseDto>),

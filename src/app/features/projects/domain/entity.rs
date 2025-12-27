@@ -17,6 +17,7 @@ pub struct Project {
     pub tanggal_selesai: Option<chrono::NaiveDate>,
     pub created_at: chrono::NaiveDateTime,
     pub updated_at: chrono::NaiveDateTime,
+    pub slug: String,
 }
 
 #[derive(Insertable, Deserialize, Serialize, Debug, Clone)]
@@ -30,6 +31,7 @@ pub struct NewProject {
     pub repository: Option<String>,
     pub tanggal_mulai: chrono::NaiveDate,
     pub tanggal_selesai: Option<chrono::NaiveDate>,
+    pub slug: String,
 }
 
 // --- Stack ---

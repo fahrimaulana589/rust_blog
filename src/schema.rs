@@ -119,6 +119,7 @@ diesel::table! {
         tanggal_selesai -> Nullable<Date>,
         created_at -> Timestamp,
         updated_at -> Timestamp,
+        slug -> Text,
     }
 }
 

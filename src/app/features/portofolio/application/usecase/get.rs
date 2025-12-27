@@ -53,6 +53,7 @@ impl Execute {
                     .collect(),
                 created_at: result.1.created_at.to_string(),
                 updated_at: result.1.updated_at.to_string(),
+                slug: result.1.slug,
             },
         })
     }

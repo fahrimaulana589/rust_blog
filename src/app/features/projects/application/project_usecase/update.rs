@@ -49,6 +49,27 @@ impl Execute {
             }
         }
 
+        let slug = dto
+            .nama_projek
+            .to_lowercase()
+            .replace(" ", "-")
+            .chars()
+            .filter(|c| c.is_alphanumeric() || *c == '-')
+            .collect::<String>();
+
+        if let Some(existing_proj) = self
+            .repository
+            .get_project_by_slug(slug.clone())
+            .map_err(|e| ProjectError::System(e.to_string()))?
+        {
+            if existing_proj.id != id {
+                validation_errors.add(
+                    "nama_projek",
+                    ValidationError::new("Slug derived from name already exists"),
+                );
+            }
+        }
+
         if !validation_errors.is_empty() {
             return Err(ProjectError::Validation(validation_errors));
         }
@@ -75,6 +96,7 @@ impl Execute {
             repository: dto.repository.or(existing.repository),
             tanggal_mulai,
             tanggal_selesai,
+            slug: slug.clone(),
         };
 
         let updated_project = self
@@ -122,6 +144,7 @@ impl Execute {
             stacks: stack_dtos,
             created_at: updated_project.created_at.to_string(),
             updated_at: updated_project.updated_at.to_string(),
+            slug: updated_project.slug,
         })
     }
 }

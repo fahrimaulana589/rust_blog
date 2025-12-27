@@ -45,6 +45,7 @@ impl Execute {
             stacks: stack_dtos,
             created_at: project.created_at.to_string(),
             updated_at: project.updated_at.to_string(),
+            slug: project.slug,
         })
     }
 }

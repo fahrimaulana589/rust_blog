@@ -126,15 +126,6 @@ impl PortofolioRepository for PortofolioRepositoryImpl {
         diesel::delete(portofolios::table.find(id)).execute(&mut conn)
     }
 
-    fn find_by_judul(&self, judul: String) -> QueryResult<Option<Portofolio>> {
-        let mut conn = self.pool.get().expect("Failed to get db connection");
-
-        portofolios::table
-            .filter(portofolios::judul.eq(judul))
-            .first(&mut conn)
-            .optional()
-    }
-
     fn find_by_slug(&self, slug: String) -> QueryResult<Option<Portofolio>> {
         let mut conn = self.pool.get().expect("Failed to get db connection");
 
