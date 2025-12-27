@@ -13,8 +13,8 @@ use utoipa::{
         crate::app::features::auth::interface::controller::forgot_password,
         crate::app::features::auth::interface::controller::reset_password,
         // Home
-        crate::app::features::home::interface::controllers::count,
-        crate::app::features::home::interface::controllers::send_email,
+        crate::app::features::home::interface::controller::count,
+        crate::app::features::home::interface::controller::send_email,
         // Blog Categories
         crate::app::features::blog::interface::controller::create_category,
         crate::app::features::blog::interface::controller::get_categories,
@@ -59,6 +59,8 @@ use utoipa::{
         schemas(
             // Utility
             crate::utils::error_response::ErrorResponse,
+            // Home
+            crate::app::features::home::interface::dto::CountResponseDto,
             // Auth
             crate::app::features::auth::interface::dto::LoginRequestDto,
             crate::app::features::auth::interface::dto::LoginResponseDto,

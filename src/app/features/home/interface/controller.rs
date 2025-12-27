@@ -1,5 +1,6 @@
+use crate::app::features::home::interface::dto::CountResponseDto;
 use crate::utils::di::Container;
-use crate::utils::success_response::map_success_response;
+use crate::utils::success_response::{map_success_response, map_success_with_data};
 use actix_web::{HttpResponse, Responder, get, web};
 
 #[get("/")]
@@ -12,7 +13,7 @@ pub async fn index() -> impl Responder {
     path = "/app/count",
     tag = "Home",
     responses(
-        (status = 200, description = "Count incremented", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>)
+        (status = 200, description = "Count incremented", body = crate::utils::success_response::SuccessResponse<CountResponseDto>)
     )
 )]
 #[get("/count")]
@@ -21,7 +22,9 @@ pub async fn count(container: web::Data<Container>) -> impl Responder {
         .count_usecase
         .increment()
         .expect("Failed to increment count");
-    let response = map_success_response(result.to_string());
+
+    let data = CountResponseDto { count: result };
+    let response = map_success_with_data("Count incremented".to_string(), data);
     HttpResponse::Ok().json(response)
 }
 
