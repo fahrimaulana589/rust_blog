@@ -60,10 +60,6 @@ impl Execute {
             }
         }
 
-        if !validation_errors.is_empty() {
-            return Err(BlogError::Validation(validation_errors));
-        }
-
         let title = dto.title;
 
         let slug = title
@@ -72,6 +68,21 @@ impl Execute {
             .chars()
             .filter(|c| c.is_alphanumeric() || *c == '-')
             .collect::<String>();
+
+        // Validate Title/Slug Uniqueness
+        if let Some(existing) = self
+            .repository
+            .get_blog_by_slug(slug.clone())
+            .map_err(|e| BlogError::System(e.to_string()))?
+        {
+            if existing.id != id {
+                validation_errors.add("title", ValidationError::new("Title already exists"));
+            }
+        }
+
+        if !validation_errors.is_empty() {
+            return Err(BlogError::Validation(validation_errors));
+        }
 
         let status = dto.status;
 

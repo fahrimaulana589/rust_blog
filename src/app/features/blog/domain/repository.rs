@@ -22,4 +22,5 @@ pub trait BlogRepository {
     fn create_category(&self, category: NewCategory) -> QueryResult<Category>;
     fn update_category(&self, id: i32, category: NewCategory) -> QueryResult<Category>;
     fn delete_category(&self, id: i32) -> QueryResult<usize>;
+    fn get_blog_by_slug(&self, slug: String) -> QueryResult<Option<Blog>>;
 }

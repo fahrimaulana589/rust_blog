@@ -102,8 +102,9 @@ async fn test_get_blogs() {
     > = test::call_and_read_body_json(&app, req).await;
     let cat_id = resp.data.unwrap().items.last().unwrap().id;
 
+    let title = format!("Test Blog {}", Utc::now().timestamp_micros());
     let create_dto = CreateBlogRequestDto {
-        title: "Test Get Blog".to_string(),
+        title: title.clone(),
         content: "Content".to_string(),
         category_id: cat_id,
         tag_ids: None,

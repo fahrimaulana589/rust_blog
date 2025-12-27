@@ -186,4 +186,15 @@ impl BlogRepository for BlogRepositoryImpl {
             .values(blog_tags)
             .get_result(&mut conn)
     }
+
+    fn get_blog_by_slug(&self, slug: String) -> QueryResult<Option<Blog>> {
+        let mut conn = self
+            .pool
+            .get()
+            .expect("couldn't get db connection from pool");
+        blog::table
+            .filter(blog::slug.eq(slug))
+            .first::<Blog>(&mut conn)
+            .optional()
+    }
 }
