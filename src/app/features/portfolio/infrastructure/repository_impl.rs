@@ -121,4 +121,13 @@ impl PortfolioRepository for PortfolioRepositoryImpl {
 
         diesel::delete(portfolios::table.find(id)).execute(&mut conn)
     }
+
+    fn find_by_judul(&self, judul: String) -> QueryResult<Option<Portfolio>> {
+        let mut conn = self.pool.get().expect("Failed to get db connection");
+
+        portfolios::table
+            .filter(portfolios::judul.eq(judul))
+            .first(&mut conn)
+            .optional()
+    }
 }

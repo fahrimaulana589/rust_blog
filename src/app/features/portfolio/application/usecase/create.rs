@@ -21,6 +21,25 @@ impl Execute {
         &self,
         dto: CreatePortfolioRequestDto,
     ) -> Result<PortfolioResponseDto, PortfolioError> {
+        use validator::{ValidationError, ValidationErrors};
+
+        let mut validation_errors = ValidationErrors::new();
+
+        if let Some(_existing) = self
+            .repository
+            .find_by_judul(dto.judul.clone())
+            .map_err(|e| PortfolioError::System(e.to_string()))?
+        {
+            validation_errors.add(
+                "judul",
+                ValidationError::new("Portfolio title already exists"),
+            );
+        }
+
+        if !validation_errors.is_empty() {
+            return Err(PortfolioError::Validation(validation_errors));
+        }
+
         let new_portfolio = NewPortfolio {
             project_id: dto.project_id,
             judul: dto.judul,

@@ -31,6 +31,27 @@ impl Execute {
             }
         })?;
 
+        use validator::{ValidationError, ValidationErrors};
+
+        let mut validation_errors = ValidationErrors::new();
+
+        if let Some(existing_portfolio) = self
+            .repository
+            .find_by_judul(dto.judul.clone())
+            .map_err(|e| PortfolioError::System(e.to_string()))?
+        {
+            if existing_portfolio.id != id {
+                validation_errors.add(
+                    "judul",
+                    ValidationError::new("Portfolio title already exists"),
+                );
+            }
+        }
+
+        if !validation_errors.is_empty() {
+            return Err(PortfolioError::Validation(validation_errors));
+        }
+
         // Merge logic
         let new_data = NewPortfolio {
             project_id: dto.project_id,

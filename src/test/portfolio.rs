@@ -322,3 +322,70 @@ async fn test_delete_portfolio() {
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status(), actix_web::http::StatusCode::NOT_FOUND);
 }
+#[actix_web::test]
+#[serial]
+async fn test_create_duplicate_portfolio() {
+    let container = Container::new();
+    seed_user(&container);
+    let app = init_test_app!(&container);
+    let token = login_admin(&app, &container).await;
+
+    // 1. Create Project
+    let project_name = format!("Project Dup {}", Utc::now().timestamp_micros());
+    let create_project_dto = CreateProjectRequestDto {
+        nama_projek: project_name,
+        deskripsi: "Desc".to_string(),
+        status: "ongoing".to_string(),
+        progress: 0,
+        link_demo: None,
+        repository: None,
+        tanggal_mulai: "2023-01-01".to_string(),
+        tanggal_selesai: None,
+        stack_ids: None,
+    };
+    let req = test::TestRequest::post()
+        .uri("/app/projects")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&create_project_dto)
+        .to_request();
+    let resp: SuccessResponse<ProjectResponseDto> = test::call_and_read_body_json(&app, req).await;
+    let project_id = resp.data.unwrap().id;
+
+    // 2. Create Portfolio 1
+    let portfolio_title = format!("Portfolio Dup {}", Utc::now().timestamp_micros());
+    let create_portfolio_dto = CreatePortfolioRequestDto {
+        project_id,
+        judul: portfolio_title.clone(),
+        deskripsi: "Portfolio Desc".to_string(),
+        is_active: true,
+    };
+
+    let req = test::TestRequest::post()
+        .uri("/app/portfolios")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&create_portfolio_dto)
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success());
+
+    // 3. Create Duplicate Portfolio
+    let req = test::TestRequest::post()
+        .uri("/app/portfolios")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&create_portfolio_dto)
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert_eq!(resp.status(), actix_web::http::StatusCode::BAD_REQUEST);
+
+    use crate::utils::error_response::ErrorResponse;
+    let body: ErrorResponse = test::read_body_json(resp).await;
+    assert!(body.errors.is_some());
+    assert_eq!(
+        body.errors.unwrap().get("judul").unwrap(),
+        common_validation_message()
+    );
+}
+
+fn common_validation_message() -> &'static str {
+    "Portfolio title already exists"
+}

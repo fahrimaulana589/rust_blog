@@ -16,4 +16,5 @@ pub trait PortfolioRepository: Send + Sync {
         portfolio_data: NewPortfolio,
     ) -> QueryResult<(Portfolio, Project, Vec<Stack>)>;
     fn delete(&self, id: i32) -> QueryResult<usize>;
+    fn find_by_judul(&self, judul: String) -> QueryResult<Option<Portfolio>>;
 }
