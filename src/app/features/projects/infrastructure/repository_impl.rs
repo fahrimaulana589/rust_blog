@@ -70,6 +70,14 @@ impl ProjectRepository for ProjectRepositoryImpl {
         diesel::delete(projects::table.find(id)).execute(&mut conn)
     }
 
+    fn get_project_by_name(&self, name: &str) -> QueryResult<Option<Project>> {
+        let mut conn = self.pool.get().unwrap();
+        projects::table
+            .filter(projects::nama_projek.eq(name))
+            .first::<Project>(&mut conn)
+            .optional()
+    }
+
     // --- Stack ---
     fn get_all_stacks(&self, limit: i64, offset: i64) -> QueryResult<(Vec<Stack>, i64)> {
         let mut conn = self.pool.get().unwrap();

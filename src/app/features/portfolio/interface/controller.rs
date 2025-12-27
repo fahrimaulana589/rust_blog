@@ -23,6 +23,8 @@ pub async fn create_portfolio(
     data: web::Data<Container>,
     payload: web::Json<CreatePortfolioRequestDto>,
 ) -> impl Responder {
+    use crate::app::features::portfolio::domain::error::PortfolioError;
+
     if let Err(e) = payload.validate() {
         return HttpResponse::BadRequest().json(map_validation_error(e));
     }
@@ -30,7 +32,15 @@ pub async fn create_portfolio(
     match data.portfolio_create_usecase.execute(payload.into_inner()) {
         Ok(res) => HttpResponse::Created()
             .json(map_success_with_data("Portfolio created".to_string(), res)),
-        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+        Err(e) => match e {
+            PortfolioError::Validation(e) => {
+                HttpResponse::BadRequest().json(map_validation_error(e))
+            }
+            PortfolioError::NotFound(msg) => HttpResponse::NotFound().json(map_string_error(msg)),
+            PortfolioError::System(msg) => {
+                HttpResponse::InternalServerError().json(map_string_error(msg))
+            }
+        },
     }
 }
 
@@ -47,11 +57,20 @@ pub async fn get_all_portfolios(
     data: web::Data<Container>,
     query: web::Query<PaginationRequestDto>,
 ) -> impl Responder {
+    use crate::app::features::portfolio::domain::error::PortfolioError;
     match data.portfolio_get_all_usecase.execute(query.into_inner()) {
         Ok(res) => {
             HttpResponse::Ok().json(map_success_with_data("List portfolios".to_string(), res))
         }
-        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+        Err(e) => match e {
+            PortfolioError::Validation(e) => {
+                HttpResponse::BadRequest().json(map_validation_error(e))
+            }
+            PortfolioError::NotFound(msg) => HttpResponse::NotFound().json(map_string_error(msg)),
+            PortfolioError::System(msg) => {
+                HttpResponse::InternalServerError().json(map_string_error(msg))
+            }
+        },
     }
 }
 
@@ -69,17 +88,20 @@ pub async fn get_all_portfolios(
 )]
 #[get("/portfolios/{id}")]
 pub async fn get_portfolio(data: web::Data<Container>, id: web::Path<i32>) -> impl Responder {
+    use crate::app::features::portfolio::domain::error::PortfolioError;
     match data.portfolio_get_usecase.execute(id.into_inner()) {
         Ok(res) => {
             HttpResponse::Ok().json(map_success_with_data("Portfolio found".to_string(), res))
         }
-        Err(e) => {
-            if e.contains("not found") {
-                HttpResponse::NotFound().json(map_string_error(e))
-            } else {
-                HttpResponse::InternalServerError().json(map_string_error(e))
+        Err(e) => match e {
+            PortfolioError::Validation(e) => {
+                HttpResponse::BadRequest().json(map_validation_error(e))
             }
-        }
+            PortfolioError::NotFound(msg) => HttpResponse::NotFound().json(map_string_error(msg)),
+            PortfolioError::System(msg) => {
+                HttpResponse::InternalServerError().json(map_string_error(msg))
+            }
+        },
     }
 }
 
@@ -91,7 +113,7 @@ pub async fn get_portfolio(data: web::Data<Container>, id: web::Path<i32>) -> im
     ),
     request_body = UpdatePortfolioRequestDto,
     responses(
-        (status = 200, description = "Portfolio updated", body = crate::utils::success_response::SuccessResponse<PortfolioResponseDto>),
+        (status = 200, description = "Portfolio updated", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>),
         (status = 400, description = "Validation error", body = ErrorResponse),
         (status = 500, description = "Internal server error")
     )
@@ -102,6 +124,8 @@ pub async fn update_portfolio(
     id: web::Path<i32>,
     payload: web::Json<UpdatePortfolioRequestDto>,
 ) -> impl Responder {
+    use crate::app::features::portfolio::domain::error::PortfolioError;
+
     if let Err(e) = payload.validate() {
         return HttpResponse::BadRequest().json(map_validation_error(e));
     }
@@ -110,10 +134,16 @@ pub async fn update_portfolio(
         .portfolio_update_usecase
         .execute(id.into_inner(), payload.into_inner())
     {
-        Ok(res) => {
-            HttpResponse::Ok().json(map_success_with_data("Portfolio updated".to_string(), res))
-        }
-        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+        Ok(_) => HttpResponse::Ok().json(map_success_response("Portfolio updated".to_string())),
+        Err(e) => match e {
+            PortfolioError::Validation(e) => {
+                HttpResponse::BadRequest().json(map_validation_error(e))
+            }
+            PortfolioError::NotFound(msg) => HttpResponse::NotFound().json(map_string_error(msg)),
+            PortfolioError::System(msg) => {
+                HttpResponse::InternalServerError().json(map_string_error(msg))
+            }
+        },
     }
 }
 
@@ -131,14 +161,17 @@ pub async fn update_portfolio(
 )]
 #[delete("/portfolios/{id}")]
 pub async fn delete_portfolio(data: web::Data<Container>, id: web::Path<i32>) -> impl Responder {
+    use crate::app::features::portfolio::domain::error::PortfolioError;
     match data.portfolio_delete_usecase.execute(id.into_inner()) {
         Ok(_) => HttpResponse::Ok().json(map_success_response("Portfolio deleted".to_string())),
-        Err(e) => {
-            if e.contains("not found") {
-                HttpResponse::NotFound().json(map_string_error(e))
-            } else {
-                HttpResponse::InternalServerError().json(map_string_error(e))
+        Err(e) => match e {
+            PortfolioError::Validation(e) => {
+                HttpResponse::BadRequest().json(map_validation_error(e))
             }
-        }
+            PortfolioError::NotFound(msg) => HttpResponse::NotFound().json(map_string_error(msg)),
+            PortfolioError::System(msg) => {
+                HttpResponse::InternalServerError().json(map_string_error(msg))
+            }
+        },
     }
 }

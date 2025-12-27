@@ -1,7 +1,7 @@
 use crate::app::features::blog::domain::entity::NewCategory;
 use crate::app::features::blog::domain::error::BlogError;
 use crate::app::features::blog::domain::repository::BlogRepository;
-use crate::app::features::blog::interface::dto::CreateCategoryRequestDto;
+use crate::app::features::blog::interface::dto::{CategoryResponseDto, CreateCategoryRequestDto};
 use std::sync::Arc;
 use validator::{Validate, ValidationError, ValidationErrors};
 
@@ -15,7 +15,10 @@ impl Execute {
         Self { repository }
     }
 
-    pub async fn execute(&self, dto: CreateCategoryRequestDto) -> Result<(), BlogError> {
+    pub async fn execute(
+        &self,
+        dto: CreateCategoryRequestDto,
+    ) -> Result<CategoryResponseDto, BlogError> {
         let mut validation_errors = match dto.validate() {
             Ok(_) => ValidationErrors::new(),
             Err(e) => e,
@@ -35,9 +38,16 @@ impl Execute {
         }
 
         let new_category = NewCategory { name: dto.name };
-        self.repository
+        let created_category = self
+            .repository
             .create_category(new_category)
             .map_err(|e| BlogError::System(e.to_string()))?;
-        Ok(())
+
+        Ok(CategoryResponseDto {
+            id: created_category.id,
+            name: created_category.name,
+            created_at: created_category.created_at.to_string(),
+            updated_at: created_category.updated_at.to_string(),
+        })
     }
 }

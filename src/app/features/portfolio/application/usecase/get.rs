@@ -1,3 +1,4 @@
+use crate::app::features::portfolio::domain::error::PortfolioError;
 use crate::app::features::portfolio::domain::repository::PortfolioRepository;
 use crate::app::features::portfolio::interface::dto::PortfolioResponseDto;
 use crate::app::features::projects::interface::dto::ProjectResponseDto;
@@ -13,8 +14,14 @@ impl Execute {
         Self { repository }
     }
 
-    pub fn execute(&self, id: i32) -> Result<PortfolioResponseDto, String> {
-        let result = self.repository.find_by_id(id).map_err(|e| e.to_string())?;
+    pub fn execute(&self, id: i32) -> Result<PortfolioResponseDto, PortfolioError> {
+        let result = self.repository.find_by_id(id).map_err(|e| {
+            if e.to_string().to_lowercase().contains("not found") {
+                PortfolioError::NotFound("Portfolio not found".to_string())
+            } else {
+                PortfolioError::System(e.to_string())
+            }
+        })?;
 
         Ok(PortfolioResponseDto {
             id: result.0.id,

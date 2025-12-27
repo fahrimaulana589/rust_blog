@@ -1,4 +1,5 @@
 use crate::app::features::portfolio::domain::entity::NewPortfolio;
+use crate::app::features::portfolio::domain::error::PortfolioError;
 use crate::app::features::portfolio::domain::repository::PortfolioRepository;
 use crate::app::features::portfolio::interface::dto::{
     CreatePortfolioRequestDto, PortfolioResponseDto,
@@ -16,18 +17,21 @@ impl Execute {
         Self { repository }
     }
 
-    pub fn execute(&self, dto: CreatePortfolioRequestDto) -> Result<PortfolioResponseDto, String> {
+    pub fn execute(
+        &self,
+        dto: CreatePortfolioRequestDto,
+    ) -> Result<PortfolioResponseDto, PortfolioError> {
         let new_portfolio = NewPortfolio {
             project_id: dto.project_id,
             judul: dto.judul,
-            deskripsi: dto.deskripsi,
-            is_active: dto.is_active.unwrap_or(true),
+            deskripsi: Some(dto.deskripsi),
+            is_active: dto.is_active,
         };
 
         let (portfolio, project, stacks) = self
             .repository
             .create(new_portfolio)
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| PortfolioError::System(e.to_string()))?;
 
         Ok(PortfolioResponseDto {
             id: portfolio.id,

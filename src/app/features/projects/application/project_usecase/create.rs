@@ -1,9 +1,11 @@
 use crate::app::features::projects::domain::entity::NewProject;
+use crate::app::features::projects::domain::error::ProjectError;
 use crate::app::features::projects::domain::repository::ProjectRepository;
 use crate::app::features::projects::interface::dto::{
     CreateProjectRequestDto, ProjectResponseDto, StackResponseDto,
 };
 use std::sync::Arc;
+use validator::{Validate, ValidationError, ValidationErrors};
 
 #[derive(Clone)]
 pub struct Execute {
@@ -15,18 +17,44 @@ impl Execute {
         Self { repository }
     }
 
-    pub fn execute(&self, dto: CreateProjectRequestDto) -> Result<ProjectResponseDto, String> {
+    pub fn execute(
+        &self,
+        dto: CreateProjectRequestDto,
+    ) -> Result<ProjectResponseDto, ProjectError> {
+        let mut validation_errors = match dto.validate() {
+            Ok(_) => ValidationErrors::new(),
+            Err(e) => e,
+        };
+
+        if self
+            .repository
+            .get_project_by_name(&dto.nama_projek)
+            .map_err(|e| ProjectError::System(e.to_string()))?
+            .is_some()
+        {
+            validation_errors.add(
+                "nama_projek",
+                ValidationError::new("Project name already exists"),
+            );
+        }
+
+        if !validation_errors.is_empty() {
+            return Err(ProjectError::Validation(validation_errors));
+        }
+
         // Parse dates
         let tanggal_mulai = chrono::NaiveDate::parse_from_str(&dto.tanggal_mulai, "%Y-%m-%d")
-            .map_err(|_| "Invalid start date format (YYYY-MM-DD)".to_string())?;
+            .map_err(|_| {
+                ProjectError::System("Invalid start date format (YYYY-MM-DD)".to_string())
+            })?;
 
-        let tanggal_selesai = match dto.tanggal_selesai {
-            Some(d) => Some(
-                chrono::NaiveDate::parse_from_str(&d, "%Y-%m-%d")
-                    .map_err(|_| "Invalid end date format (YYYY-MM-DD)".to_string())?,
-            ),
-            None => None,
-        };
+        let tanggal_selesai =
+            match dto.tanggal_selesai {
+                Some(d) => Some(chrono::NaiveDate::parse_from_str(&d, "%Y-%m-%d").map_err(
+                    |_| ProjectError::System("Invalid end date format (YYYY-MM-DD)".to_string()),
+                )?),
+                None => None,
+            };
 
         let new_project = NewProject {
             nama_projek: dto.nama_projek,
@@ -43,7 +71,7 @@ impl Execute {
         let created_project = self
             .repository
             .create_project(new_project)
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| ProjectError::System(e.to_string()))?;
 
         // Add stacks
         let mut stack_dtos = Vec::new();
@@ -51,12 +79,12 @@ impl Execute {
             for stack_id in stack_ids {
                 self.repository
                     .add_stack_to_project(created_project.id, stack_id)
-                    .map_err(|e| e.to_string())?;
+                    .map_err(|e| ProjectError::System(e.to_string()))?;
 
                 if let Some(stack) = self
                     .repository
                     .get_stack_by_id(stack_id)
-                    .map_err(|e| e.to_string())?
+                    .map_err(|e| ProjectError::System(e.to_string()))?
                 {
                     stack_dtos.push(StackResponseDto {
                         id: stack.id,

@@ -148,19 +148,9 @@ async fn test_get_blog_by_id() {
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&category_dto)
         .to_request();
-    test::call_service(&app, req).await;
-
-    // Get Cat ID
-    let req = test::TestRequest::get()
-        .uri("/app/categories?per_page=1000")
-        .insert_header(("Authorization", format!("Bearer {}", token)))
-        .to_request();
-    let resp: SuccessResponse<
-        crate::app::features::blog::interface::dto::PaginatedResponseDto<
-            crate::app::features::blog::interface::dto::CategoryResponseDto,
-        >,
-    > = test::call_and_read_body_json(&app, req).await;
-    let cat_id = resp.data.unwrap().items.last().unwrap().id;
+    let resp: SuccessResponse<crate::app::features::blog::interface::dto::CategoryResponseDto> =
+        test::call_and_read_body_json(&app, req).await;
+    let cat_id = resp.data.unwrap().id;
 
     // Create Blog
     let unique_title = format!("Test ID Blog {}", Utc::now().timestamp_micros());
@@ -178,24 +168,8 @@ async fn test_get_blog_by_id() {
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&create_dto)
         .to_request();
-    test::call_service(&app, req).await;
-
-    // Find Blog ID
-    // Find Blog ID
-    let req = test::TestRequest::get()
-        .uri("/app/blogs?per_page=1000")
-        .insert_header(("Authorization", format!("Bearer {}", token)))
-        .to_request();
-    let resp: SuccessResponse<
-        crate::app::features::blog::interface::dto::PaginatedResponseDto<BlogResponseDto>,
-    > = test::call_and_read_body_json(&app, req).await;
-    let blog = resp
-        .data
-        .unwrap()
-        .items
-        .into_iter()
-        .find(|b| b.title == unique_title)
-        .unwrap();
+    let resp: SuccessResponse<BlogResponseDto> = test::call_and_read_body_json(&app, req).await;
+    let blog = resp.data.unwrap();
 
     // Get By ID
     let req = test::TestRequest::get()
@@ -223,17 +197,9 @@ async fn test_update_blog() {
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&category_dto)
         .to_request();
-    test::call_service(&app, req).await;
-    let req = test::TestRequest::get()
-        .uri("/app/categories?per_page=1000")
-        .insert_header(("Authorization", format!("Bearer {}", token)))
-        .to_request();
-    let resp: SuccessResponse<
-        crate::app::features::blog::interface::dto::PaginatedResponseDto<
-            crate::app::features::blog::interface::dto::CategoryResponseDto,
-        >,
-    > = test::call_and_read_body_json(&app, req).await;
-    let cat_id = resp.data.unwrap().items.last().unwrap().id;
+    let resp: SuccessResponse<crate::app::features::blog::interface::dto::CategoryResponseDto> =
+        test::call_and_read_body_json(&app, req).await;
+    let cat_id = resp.data.unwrap().id;
 
     // Create Blog
     let unique_title = format!("Test Update Blog {}", Utc::now().timestamp_micros());
@@ -251,24 +217,8 @@ async fn test_update_blog() {
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&create_dto)
         .to_request();
-    test::call_service(&app, req).await;
-
-    // Find Blog ID
-    // Find Blog ID
-    let req = test::TestRequest::get()
-        .uri("/app/blogs?per_page=1000")
-        .insert_header(("Authorization", format!("Bearer {}", token)))
-        .to_request();
-    let resp: SuccessResponse<
-        crate::app::features::blog::interface::dto::PaginatedResponseDto<BlogResponseDto>,
-    > = test::call_and_read_body_json(&app, req).await;
-    let blog = resp
-        .data
-        .unwrap()
-        .items
-        .into_iter()
-        .find(|b| b.title == unique_title)
-        .unwrap();
+    let resp: SuccessResponse<BlogResponseDto> = test::call_and_read_body_json(&app, req).await;
+    let blog = resp.data.unwrap();
 
     // Update
     let update_title = format!("Updated Title {}", Utc::now().timestamp_micros());
@@ -315,17 +265,9 @@ async fn test_delete_blog() {
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&category_dto)
         .to_request();
-    test::call_service(&app, req).await;
-    let req = test::TestRequest::get()
-        .uri("/app/categories?per_page=1000")
-        .insert_header(("Authorization", format!("Bearer {}", token)))
-        .to_request();
-    let resp: SuccessResponse<
-        crate::app::features::blog::interface::dto::PaginatedResponseDto<
-            crate::app::features::blog::interface::dto::CategoryResponseDto,
-        >,
-    > = test::call_and_read_body_json(&app, req).await;
-    let cat_id = resp.data.unwrap().items.last().unwrap().id;
+    let resp: SuccessResponse<crate::app::features::blog::interface::dto::CategoryResponseDto> =
+        test::call_and_read_body_json(&app, req).await;
+    let cat_id = resp.data.unwrap().id;
 
     // Create Blog
     let unique_title = format!("Test Delete Blog {}", Utc::now().timestamp_micros());
@@ -343,24 +285,8 @@ async fn test_delete_blog() {
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&create_dto)
         .to_request();
-    test::call_service(&app, req).await;
-
-    // Find Blog ID
-    // Find Blog ID
-    let req = test::TestRequest::get()
-        .uri("/app/blogs?per_page=1000")
-        .insert_header(("Authorization", format!("Bearer {}", token)))
-        .to_request();
-    let resp: SuccessResponse<
-        crate::app::features::blog::interface::dto::PaginatedResponseDto<BlogResponseDto>,
-    > = test::call_and_read_body_json(&app, req).await;
-    let blog = resp
-        .data
-        .unwrap()
-        .items
-        .into_iter()
-        .find(|b| b.title == unique_title)
-        .unwrap();
+    let resp: SuccessResponse<BlogResponseDto> = test::call_and_read_body_json(&app, req).await;
+    let blog = resp.data.unwrap();
 
     // Delete
     let req = test::TestRequest::delete()
@@ -388,17 +314,9 @@ async fn test_partial_update_blog() {
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&category_dto)
         .to_request();
-    test::call_service(&app, req).await;
-    let req = test::TestRequest::get()
-        .uri("/app/categories?per_page=1000")
-        .insert_header(("Authorization", format!("Bearer {}", token)))
-        .to_request();
-    let resp: SuccessResponse<
-        crate::app::features::blog::interface::dto::PaginatedResponseDto<
-            crate::app::features::blog::interface::dto::CategoryResponseDto,
-        >,
-    > = test::call_and_read_body_json(&app, req).await;
-    let cat_id = resp.data.unwrap().items.last().unwrap().id;
+    let resp: SuccessResponse<crate::app::features::blog::interface::dto::CategoryResponseDto> =
+        test::call_and_read_body_json(&app, req).await;
+    let cat_id = resp.data.unwrap().id;
 
     // Create Blog
     let unique_title = format!("Test Partial Update {}", Utc::now().timestamp_micros());
@@ -416,23 +334,8 @@ async fn test_partial_update_blog() {
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .set_json(&create_dto)
         .to_request();
-    test::call_service(&app, req).await;
-
-    // Find Blog
-    let req = test::TestRequest::get()
-        .uri("/app/blogs?per_page=1000")
-        .insert_header(("Authorization", format!("Bearer {}", token)))
-        .to_request();
-    let resp: SuccessResponse<
-        crate::app::features::blog::interface::dto::PaginatedResponseDto<BlogResponseDto>,
-    > = test::call_and_read_body_json(&app, req).await;
-    let blog = resp
-        .data
-        .unwrap()
-        .items
-        .into_iter()
-        .find(|b| b.title == unique_title)
-        .unwrap();
+    let resp: SuccessResponse<BlogResponseDto> = test::call_and_read_body_json(&app, req).await;
+    let blog = resp.data.unwrap();
 
     // Partial Update: Change Title only
     let update_title = format!("Partially Updated Title {}", Utc::now().timestamp_micros());

@@ -8,6 +8,7 @@ pub trait ProjectRepository {
     fn create_project(&self, project: NewProject) -> QueryResult<Project>;
     fn update_project(&self, id: i32, project: NewProject) -> QueryResult<Project>;
     fn delete_project(&self, id: i32) -> QueryResult<usize>;
+    fn get_project_by_name(&self, name: &str) -> QueryResult<Option<Project>>;
 
     // Stack CRUD
     fn get_all_stacks(&self, limit: i64, offset: i64) -> QueryResult<(Vec<Stack>, i64)>;

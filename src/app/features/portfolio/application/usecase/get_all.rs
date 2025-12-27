@@ -1,3 +1,4 @@
+use crate::app::features::portfolio::domain::error::PortfolioError;
 use crate::app::features::portfolio::domain::repository::PortfolioRepository;
 use crate::app::features::portfolio::interface::dto::{
     MetaDto, PaginatedResponseDto, PaginationRequestDto, PortfolioResponseDto,
@@ -18,7 +19,7 @@ impl Execute {
     pub fn execute(
         &self,
         query: PaginationRequestDto,
-    ) -> Result<PaginatedResponseDto<PortfolioResponseDto>, String> {
+    ) -> Result<PaginatedResponseDto<PortfolioResponseDto>, PortfolioError> {
         let page = query.page.unwrap_or(1);
         let per_page = query.per_page.unwrap_or(10);
         let offset = (page - 1) * per_page;
@@ -26,7 +27,7 @@ impl Execute {
         let (items, total_count) = self
             .repository
             .find_all(offset, per_page)
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| PortfolioError::System(e.to_string()))?;
 
         let total_pages = (total_count as f64 / per_page as f64).ceil() as i64;
 

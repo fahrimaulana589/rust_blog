@@ -5,6 +5,7 @@ use crate::app::features::projects::interface::dto::{
 use crate::init_test_app;
 use crate::test::helpers::{login_admin, seed_user};
 use crate::utils::di::Container;
+use crate::utils::error_response::ErrorResponse;
 use crate::utils::success_response::SuccessResponse;
 use actix_web::test;
 use chrono::Utc;
@@ -58,9 +59,10 @@ async fn test_get_stacks() {
         .uri("/app/stacks")
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
-    let resp: SuccessResponse<Vec<StackResponseDto>> =
-        test::call_and_read_body_json(&app, req).await;
-    let stacks = resp.data.unwrap();
+    let resp: SuccessResponse<
+        crate::app::features::projects::interface::dto::PaginatedResponseDto<StackResponseDto>,
+    > = test::call_and_read_body_json(&app, req).await;
+    let stacks = resp.data.unwrap().items;
 
     assert!(stacks.len() > 0);
     assert!(stacks.iter().any(|s| s.nama_stack == stack_name));
@@ -217,14 +219,15 @@ async fn test_update_project() {
     let resp: SuccessResponse<ProjectResponseDto> = test::call_and_read_body_json(&app, req).await;
     let id = resp.data.unwrap().id;
 
+    let updated_name = format!("Updated Name {}", Utc::now().timestamp_micros());
     let update_dto = UpdateProjectRequestDto {
-        nama_projek: Some("Updated Name".to_string()),
-        deskripsi: None,
-        status: Some("completed".to_string()),
+        nama_projek: updated_name.clone(),
+        deskripsi: "Desc".to_string(),
+        status: "completed".to_string(),
         progress: Some(100),
         link_demo: None,
         repository: None,
-        tanggal_mulai: None,
+        tanggal_mulai: "2023-01-01".to_string(),
         tanggal_selesai: None,
         stack_ids: None,
     };
@@ -245,7 +248,7 @@ async fn test_update_project() {
     let resp: SuccessResponse<ProjectResponseDto> = test::call_and_read_body_json(&app, req).await;
     let updated = resp.data.unwrap();
 
-    assert_eq!(updated.nama_projek, "Updated Name");
+    assert_eq!(updated.nama_projek, updated_name);
     assert_eq!(updated.status, "completed");
     assert_eq!(updated.progress, 100);
 }
@@ -354,13 +357,13 @@ async fn test_project_stack_flow() {
     // 3. Update Project Stacks (Path: Update Project + Relation)
     // Remove stack2, keep stack1
     let update_dto = UpdateProjectRequestDto {
-        nama_projek: None,
-        deskripsi: None,
-        status: Some("completed".to_string()),
+        nama_projek: project_name.clone(), // Keep original name
+        deskripsi: "Flow Desc".to_string(),
+        status: "completed".to_string(),
         progress: Some(100),
         link_demo: None,
         repository: None,
-        tanggal_mulai: None,
+        tanggal_mulai: "2023-01-01".to_string(),
         tanggal_selesai: None,
         stack_ids: Some(vec![stack1_id]),
     };
@@ -496,4 +499,52 @@ async fn test_delete_stack() {
         .to_request();
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status(), actix_web::http::StatusCode::NOT_FOUND);
+}
+
+#[actix_web::test]
+#[serial]
+async fn test_create_duplicate_project() {
+    let container = Container::new();
+    seed_user(&container);
+    let app = init_test_app!(&container);
+    let token = login_admin(&app, &container).await;
+
+    let project_name = format!("Unique Proj {}", Utc::now().timestamp_micros());
+    let create_dto = CreateProjectRequestDto {
+        nama_projek: project_name.clone(),
+        deskripsi: "Desc".to_string(),
+        status: "draft".to_string(),
+        progress: 0,
+        link_demo: None,
+        repository: None,
+        tanggal_mulai: "2023-01-01".to_string(),
+        tanggal_selesai: None,
+        stack_ids: None,
+    };
+
+    // First Create (Success)
+    let req = test::TestRequest::post()
+        .uri("/app/projects")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&create_dto)
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success());
+
+    // Second Create (Fail)
+    let req = test::TestRequest::post()
+        .uri("/app/projects")
+        .insert_header(("Authorization", format!("Bearer {}", token)))
+        .set_json(&create_dto)
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert_eq!(resp.status(), actix_web::http::StatusCode::BAD_REQUEST);
+
+    // Check error message
+    let body: ErrorResponse = test::read_body_json(resp).await;
+    assert!(body.errors.is_some());
+    assert_eq!(
+        body.errors.unwrap().get("nama_projek").unwrap(),
+        "Project name already exists"
+    );
 }

@@ -39,6 +39,9 @@ src/
    - **DTOs**: Define data ownership for Requests (`...RequestDto`) and Responses (`...ResponseDto`).
    - **Validation**: Explicitly trigger `.validate()` on DTOs.
    - **Response**: Use `impl Responder`. Map success with `crate::utils::success_response` and errors with `crate::utils::error_response`.
+   - **Create Operations**:
+     - **Status**: Must return `201 Created`.
+     - **Body**: Must return the created entity's DTO (e.g., `SuccessResponse<CategoryResponseDto>`). Do NOT return just a string message.
    - **Pagination**:
      - All list endpoints **MUST** be paginated (Default: `page=1`, `per_page=10`).
      - Request: Use `PaginationRequestDto`.

@@ -44,8 +44,8 @@ async fn test_create_portfolio() {
     let create_portfolio_dto = CreatePortfolioRequestDto {
         project_id,
         judul: portfolio_title.clone(),
-        deskripsi: Some("Portfolio Desc".to_string()),
-        is_active: Some(true),
+        deskripsi: "Portfolio Desc".to_string(),
+        is_active: true,
     };
 
     let req = test::TestRequest::post()
@@ -97,8 +97,8 @@ async fn test_get_portfolios() {
     let create_portfolio_dto = CreatePortfolioRequestDto {
         project_id,
         judul: portfolio_title.clone(),
-        deskripsi: None,
-        is_active: Some(true),
+        deskripsi: "Desc".to_string(),
+        is_active: true,
     };
     let req = test::TestRequest::post()
         .uri("/app/portfolios")
@@ -155,8 +155,8 @@ async fn test_get_portfolio_by_id() {
     let create_portfolio_dto = CreatePortfolioRequestDto {
         project_id,
         judul: portfolio_title.clone(),
-        deskripsi: None,
-        is_active: None,
+        deskripsi: "Desc".to_string(),
+        is_active: true,
     };
     let req = test::TestRequest::post()
         .uri("/app/portfolios")
@@ -214,8 +214,8 @@ async fn test_update_portfolio() {
     let create_portfolio_dto = CreatePortfolioRequestDto {
         project_id,
         judul: portfolio_title.clone(),
-        deskripsi: None,
-        is_active: None,
+        deskripsi: "Desc".to_string(),
+        is_active: true,
     };
     let req = test::TestRequest::post()
         .uri("/app/portfolios")
@@ -229,10 +229,10 @@ async fn test_update_portfolio() {
     // 3. Update
     let update_title = format!("Portfolio Updated {}", Utc::now().timestamp_micros());
     let update_dto = UpdatePortfolioRequestDto {
-        project_id: None, // Keep existing
-        judul: Some(update_title.clone()),
-        deskripsi: Some("Updated Desc".to_string()),
-        is_active: Some(false),
+        project_id: project_id, // Keep existing implicitly by sending same ID
+        judul: update_title.clone(),
+        deskripsi: "Updated Desc".to_string(),
+        is_active: false,
     };
     let req = test::TestRequest::put()
         .uri(&format!("/app/portfolios/{}", portfolio_id))
@@ -290,8 +290,8 @@ async fn test_delete_portfolio() {
     let create_portfolio_dto = CreatePortfolioRequestDto {
         project_id,
         judul: portfolio_title.clone(),
-        deskripsi: None,
-        is_active: None,
+        deskripsi: "Desc".to_string(),
+        is_active: true,
     };
     let req = test::TestRequest::post()
         .uri("/app/portfolios")

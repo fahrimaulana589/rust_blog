@@ -31,8 +31,9 @@ pub async fn create_category(
         .execute(payload.into_inner())
         .await
     {
-        Ok(_) => HttpResponse::Ok().json(map_success_response(
+        Ok(data) => HttpResponse::Created().json(map_success_with_data(
             "Category created successfully".to_string(),
+            data,
         )),
         Err(e) => match e {
             BlogError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),
@@ -180,7 +181,7 @@ pub async fn delete_category(
     tag = "Blog",
     request_body = CreateTagRequestDto,
     responses(
-        (status = 200, description = "Tag created", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>),
+        (status = 201, description = "Tag created", body = crate::utils::success_response::SuccessResponse<TagResponseDto>),
         (status = 400, description = "Validation error", body = ErrorResponse),
         (status = 500, description = "Internal server error")
     )
@@ -196,9 +197,10 @@ pub async fn create_tag(
         .execute(payload.into_inner())
         .await
     {
-        Ok(_) => {
-            HttpResponse::Ok().json(map_success_response("Tag created successfully".to_string()))
-        }
+        Ok(data) => HttpResponse::Created().json(map_success_with_data(
+            "Tag created successfully".to_string(),
+            data,
+        )),
         Err(e) => match e {
             BlogError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),
             BlogError::NotFound(msg) => HttpResponse::NotFound().json(map_string_error(msg)),
@@ -330,7 +332,7 @@ pub async fn delete_tag(container: web::Data<Container>, id: web::Path<i32>) -> 
     tag = "Blog",
     request_body = CreateBlogRequestDto,
     responses(
-        (status = 200, description = "Blog created", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>),
+        (status = 201, description = "Blog created", body = crate::utils::success_response::SuccessResponse<BlogResponseDto>),
         (status = 400, description = "Validation error", body = ErrorResponse),
         (status = 500, description = "Internal server error")
     )
@@ -347,8 +349,9 @@ pub async fn create_blog(
         .execute(payload.into_inner())
         .await
     {
-        Ok(_) => HttpResponse::Ok().json(map_success_response(
+        Ok(data) => HttpResponse::Created().json(map_success_with_data(
             "Blog created successfully".to_string(),
+            data,
         )),
         Err(e) => match e {
             BlogError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),

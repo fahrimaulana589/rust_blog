@@ -9,16 +9,32 @@ pub struct CreatePortfolioRequestDto {
     pub project_id: i32,
     #[validate(length(min = 1, message = "Judul is required"))]
     pub judul: String,
-    pub deskripsi: Option<String>,
-    pub is_active: Option<bool>,
+    #[validate(length(min = 1, message = "Deskripsi is required"))]
+    pub deskripsi: String,
+    #[validate(custom(function = validate_status))]
+    pub is_active: bool,
 }
 
 #[derive(Deserialize, Serialize, Validate, ToSchema)]
 pub struct UpdatePortfolioRequestDto {
-    pub project_id: Option<i32>,
-    pub judul: Option<String>,
-    pub deskripsi: Option<String>,
-    pub is_active: Option<bool>,
+    #[validate(range(min = 1, message = "Project ID is required"))]
+    pub project_id: i32,
+    #[validate(length(min = 1, message = "Judul is required"))]
+    pub judul: String,
+    #[validate(length(min = 1, message = "Deskripsi is required"))]
+    pub deskripsi: String,
+    #[validate(custom(function = validate_status))]
+    pub is_active: bool,
+}
+
+fn validate_status(status: &bool) -> Result<(), validator::ValidationError> {
+    if status != &true && status != &false {
+        let mut error = validator::ValidationError::new("required");
+        error.message = Some("Is active is required".into());
+        error.add_param(std::borrow::Cow::from("is_active"), &"is_active"); // workaround to map error
+        return Err(error);
+    }
+    Ok(())
 }
 
 #[derive(Deserialize, Serialize, Validate, ToSchema)]

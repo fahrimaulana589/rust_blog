@@ -13,6 +13,7 @@ use validator::Validate;
 // --- Projects ---
 
 #[utoipa::path(
+    post,
     path = "/app/projects",
     tag = "Projects",
     request_body = CreateProjectRequestDto,
@@ -27,17 +28,21 @@ pub async fn create_project(
     data: web::Data<Container>,
     payload: web::Json<CreateProjectRequestDto>,
 ) -> impl Responder {
-    if let Err(e) = payload.validate() {
-        return HttpResponse::BadRequest().json(map_validation_error(e));
-    }
+    use crate::app::features::projects::domain::error::ProjectError;
 
     match data.create_project_usecase.execute(payload.into_inner()) {
         Ok(res) => HttpResponse::Created().json(SuccessResponse::new(
             "Project created successfully".to_string(),
             Some(res),
         )),
-        Err(e) => HttpResponse::InternalServerError()
-            .json(crate::utils::error_response::map_string_error(e)),
+        Err(e) => match e {
+            ProjectError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),
+            ProjectError::NotFound(msg) => {
+                HttpResponse::NotFound().json(crate::utils::error_response::map_string_error(msg))
+            }
+            ProjectError::System(msg) => HttpResponse::InternalServerError()
+                .json(crate::utils::error_response::map_string_error(msg)),
+        },
     }
 }
 
@@ -102,6 +107,7 @@ pub async fn get_project(data: web::Data<Container>, path: web::Path<i32>) -> im
 }
 
 #[utoipa::path(
+    put,
     path = "/app/projects/{id}",
     tag = "Projects",
     params(
@@ -111,6 +117,7 @@ pub async fn get_project(data: web::Data<Container>, path: web::Path<i32>) -> im
     responses(
         (status = 200, description = "Project updated", body = crate::utils::success_response::SuccessResponse<crate::utils::success_response::Empty>),
         (status = 400, description = "Validation error", body = ErrorResponse),
+        (status = 404, description = "Project not found", body = ErrorResponse),
         (status = 500, description = "Internal server error")
     )
 )]
@@ -120,10 +127,9 @@ pub async fn update_project(
     path: web::Path<i32>,
     payload: web::Json<UpdateProjectRequestDto>,
 ) -> impl Responder {
+    use crate::app::features::projects::domain::error::ProjectError;
+
     let id = path.into_inner();
-    if let Err(e) = payload.validate() {
-        return HttpResponse::BadRequest().json(map_validation_error(e));
-    }
 
     match data
         .update_project_usecase
@@ -133,14 +139,14 @@ pub async fn update_project(
             "Project updated successfully".to_string(),
             None,
         )),
-        Err(e) => {
-            if e.contains("not found") {
-                HttpResponse::NotFound().json(crate::utils::error_response::map_string_error(e))
-            } else {
-                HttpResponse::InternalServerError()
-                    .json(crate::utils::error_response::map_string_error(e))
+        Err(e) => match e {
+            ProjectError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),
+            ProjectError::NotFound(msg) => {
+                HttpResponse::NotFound().json(crate::utils::error_response::map_string_error(msg))
             }
-        }
+            ProjectError::System(msg) => HttpResponse::InternalServerError()
+                .json(crate::utils::error_response::map_string_error(msg)),
+        },
     }
 }
 
