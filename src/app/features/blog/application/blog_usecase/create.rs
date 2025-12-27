@@ -4,6 +4,13 @@ use crate::app::features::blog::domain::entity::{BlogTags, NewBlog};
 use crate::app::features::blog::domain::repository::BlogRepository;
 use crate::app::features::blog::interface::dto::CreateBlogRequestDto;
 use std::sync::Arc;
+use crate::app::features::blog::domain::error::BlogError;
+use crate::app::features::blog::interface::dto::{
+    BlogResponseDto, CategoryResponseDto, TagResponseDto,
+};
+use validator::Validate;
+use validator::ValidationError;
+
 
 #[derive(Clone)]
 pub struct Execute {
@@ -19,15 +26,10 @@ impl Execute {
         &self,
         dto: CreateBlogRequestDto,
     ) -> Result<
-        crate::app::features::blog::interface::dto::BlogResponseDto,
-        crate::app::features::blog::domain::error::BlogError,
+        BlogResponseDto,
+        BlogError,
     > {
-        use crate::app::features::blog::domain::error::BlogError;
-        use crate::app::features::blog::interface::dto::{
-            BlogResponseDto, CategoryResponseDto, TagResponseDto,
-        };
-        use validator::Validate;
-        use validator::ValidationError;
+        
 
         let mut validation_errors = dto.validate().err().unwrap_or_default();
 

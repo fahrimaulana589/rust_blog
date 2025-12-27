@@ -1,6 +1,8 @@
 use crate::app::features::projects::domain::{entity::NewStack, repository::ProjectRepository};
 use crate::app::features::projects::interface::dto::UpdateStackRequestDto;
 use std::sync::Arc;
+use crate::app::features::projects::interface::dto::StackResponseDto;
+
 
 #[derive(Clone)]
 pub struct Execute {
@@ -16,9 +18,8 @@ impl Execute {
         &self,
         id: i32,
         dto: UpdateStackRequestDto,
-    ) -> Result<crate::app::features::projects::interface::dto::StackResponseDto, String> {
-        use crate::app::features::projects::interface::dto::StackResponseDto;
-
+    ) -> Result<StackResponseDto, String> {
+        
         let _existing = self
             .repository
             .get_stack_by_id(id)

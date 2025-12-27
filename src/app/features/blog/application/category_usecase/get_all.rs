@@ -1,6 +1,8 @@
 use crate::app::features::blog::domain::repository::BlogRepository;
 use crate::app::features::blog::interface::dto::CategoryResponseDto;
 use std::sync::Arc;
+use crate::app::features::blog::interface::dto::PaginationRequestDto;
+use crate::app::features::blog::interface::dto::PaginatedResponseDto;
 
 #[derive(Clone)]
 pub struct Execute {
@@ -14,9 +16,9 @@ impl Execute {
 
     pub async fn execute(
         &self,
-        query: crate::app::features::blog::interface::dto::PaginationRequestDto,
+        query: PaginationRequestDto,
     ) -> Result<
-        crate::app::features::blog::interface::dto::PaginatedResponseDto<CategoryResponseDto>,
+        PaginatedResponseDto<CategoryResponseDto>,
         String,
     > {
         let page = query.page.unwrap_or(1);
