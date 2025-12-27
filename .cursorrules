@@ -86,11 +86,17 @@ src/
 
 ### Error Handling
 - **Repositories**: Return `QueryResult<T>`. Do not verify logic here, just DB ops.
-- **Use Cases**: Return `Result<T, String>`. Map DB errors to `String` using `.map_err(|e| e.to_string())`.
+- **Use Cases**: 
+    - Return `Result<T, AppError>` (e.g., `BlogError`, `AuthError`). 
+    - Perform **Combined Validation**: 
+        1. Run static DTO validation (`dto.validate()`).
+        2. Run dynamic DB checks (e.g., uniqueness, existence).
+        3. Collect all errors into a single `ValidationErrors` map if possible.
 - **Controllers**:
-    - Validation Errors: `HttpResponse::BadRequest().json(map_validation_error(e))`
-    - Logic/System Errors: `HttpResponse::InternalServerError().json(map_string_error(e))`
-    - Not Found: Check error string content (e.g., `if e.contains("not found")`) and return `NotFound`.
+    - Match specific error enum variants:
+        - `AppError::Validation(e)` -> `HttpResponse::BadRequest().json(map_validation_error(e))`
+        - `AppError::NotFound(msg)` -> `HttpResponse::NotFound().json(map_string_error(msg))`
+        - `AppError::System(msg)` -> `HttpResponse::InternalServerError().json(map_string_error(msg))`
 
 ### Dependency Injection
 - Manual DI via `crate::utils::di::Container` struct.
@@ -101,6 +107,21 @@ src/
 ### Routing
 - Register services in `src/app/drivers/routes.rs`.
 - Group feature routes appropriately (e.g., under `/app` scope).
+
+## Database Schema Reference
+The project uses the following Diesel schema tables:
+- `blog` (id, title, slug, content, category_id, status, ...): Unique `slug`.
+- `blog_tags` (blog_id, tag_id): Many-to-Many link.
+- `categories` (id, name): Master data for blog categorization.
+- `tags` (id, name): Master data for blog tagging.
+- `projects` (id, nama_projek, status, ...): Portfolio projects.
+- `portfolios` (id, project_id, ...): Portfolio details linked to projects.
+- `stacks` (id, nama_stack): Tech stacks.
+- `project_stack` (id, project_id, stack_id): Link projects to stacks.
+- `profiles` (id, full_name, role, ...): User profile information.
+- `profile_languages`, `profile_specializations`, `profile_tech_focus`: Profile details.
+- `users` (id, username, email, password): Authentication.
+- `counts`: Utility table.
 
 ## Workflow for New Features
 1.  **Domain**: Define Entities and Repository Trait.
