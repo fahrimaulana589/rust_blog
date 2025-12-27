@@ -1,3 +1,5 @@
+use chrono::Utc;
+
 use crate::app::features::blog::domain::entity::{BlogTags, NewBlog};
 use crate::app::features::blog::domain::repository::BlogRepository;
 use crate::app::features::blog::interface::dto::CreateBlogRequestDto;
@@ -13,18 +15,50 @@ impl Execute {
         Self { repository }
     }
 
-    pub async fn execute(&self, dto: CreateBlogRequestDto) -> Result<(), String> {
+    pub async fn execute(
+        &self,
+        dto: CreateBlogRequestDto,
+    ) -> Result<(), crate::app::features::blog::domain::error::BlogError> {
+        use crate::app::features::blog::domain::error::BlogError;
+        use validator::Validate;
+        use validator::ValidationError;
+
+        let mut validation_errors = dto.validate().err().unwrap_or_default();
+
         // Validate Category Exists
         if self
             .repository
             .get_category_by_id(dto.category_id)
-            .map_err(|e| e.to_string())?
+            .map_err(|e| BlogError::System(e.to_string()))?
             .is_none()
         {
-            return Err("Category not found".to_string());
+            validation_errors.add("category_id", ValidationError::new("Category not found"));
         }
 
-        // Create Blog
+        let val_tag_ids = dto.tag_ids.clone();
+
+        // Validate Tag Exists
+        if let Some(tag_ids) = val_tag_ids {
+            for tag_id in tag_ids {
+                if self
+                    .repository
+                    .get_tag_by_id(tag_id)
+                    .map_err(|e| BlogError::System(e.to_string()))?
+                    .is_none()
+                {
+                    validation_errors.add("tag_ids", ValidationError::new("Tag not found"));
+                    // Optional: break or continue to find all invalid tags?
+                    // Validator usually reports one error per field constraint unless customized.
+                    // Let's report one "Tag not found" for simplicity if any is missing.
+                    break;
+                }
+            }
+        }
+
+        if !validation_errors.is_empty() {
+            return Err(BlogError::Validation(validation_errors));
+        }
+
         // Create Blog
         let slug = dto
             .title
@@ -34,6 +68,14 @@ impl Execute {
             .filter(|c| c.is_alphanumeric() || *c == '-')
             .collect::<String>();
 
+        let status = dto.status;
+
+        let published_at = if status == "PUBLISHED" {
+            Some(Utc::now().naive_utc())
+        } else {
+            None
+        };
+
         let new_blog = NewBlog {
             title: dto.title,
             content: dto.content,
@@ -41,30 +83,25 @@ impl Execute {
             slug,
             excerpt: dto.excerpt,
             thumbnail: dto.thumbnail,
-            status: dto.status.unwrap_or_else(|| "DRAFT".to_string()),
-            published_at: None, // Logic for published_at can be added here if needed
+            status,
+            published_at,
             view_count: 0,
         };
         let created_blog = self
             .repository
             .create_blog(new_blog)
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| BlogError::System(e.to_string()))?;
 
         // Create Blog Tags if provided
         if let Some(tag_ids) = dto.tag_ids {
             for tag_id in tag_ids {
-                // Validate Tag Exists? Or rely on FK?
-                // Let's rely on FK for tags to keep it snappy, or strict.
-                // Strict: checks each. FK: simpler.
-                // Let's do FK but if it fails it might be obscure.
-                // For now, straight insert.
                 let blog_tags = BlogTags {
                     blog_id: created_blog.id,
                     tag_id,
                 };
                 self.repository
                     .create_blog_tags(blog_tags)
-                    .map_err(|e| e.to_string())?;
+                    .map_err(|e| BlogError::System(e.to_string()))?;
             }
         }
 

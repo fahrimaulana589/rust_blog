@@ -325,9 +325,8 @@ pub async fn create_blog(
     container: web::Data<Container>,
     payload: web::Json<CreateBlogRequestDto>,
 ) -> impl Responder {
-    if let Err(e) = payload.validate() {
-        return HttpResponse::BadRequest().json(map_validation_error(e));
-    }
+    use crate::app::features::blog::domain::error::BlogError;
+
     match container
         .create_blog_usecase
         .execute(payload.into_inner())
@@ -336,7 +335,13 @@ pub async fn create_blog(
         Ok(_) => HttpResponse::Ok().json(map_success_response(
             "Blog created successfully".to_string(),
         )),
-        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+        Err(e) => match e {
+            BlogError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),
+            BlogError::NotFound(msg) => HttpResponse::NotFound().json(map_string_error(msg)),
+            BlogError::System(msg) => {
+                HttpResponse::InternalServerError().json(map_string_error(msg))
+            }
+        },
     }
 }
 
@@ -414,9 +419,8 @@ pub async fn update_blog(
     id: web::Path<i32>,
     payload: web::Json<UpdateBlogRequestDto>,
 ) -> impl Responder {
-    if let Err(e) = payload.validate() {
-        return HttpResponse::BadRequest().json(map_validation_error(e));
-    }
+    use crate::app::features::blog::domain::error::BlogError;
+
     match container
         .update_blog_usecase
         .execute(id.into_inner(), payload.into_inner())
@@ -425,7 +429,13 @@ pub async fn update_blog(
         Ok(_) => HttpResponse::Ok().json(map_success_response(
             "Blog updated successfully".to_string(),
         )),
-        Err(e) => HttpResponse::InternalServerError().json(map_string_error(e)),
+        Err(e) => match e {
+            BlogError::Validation(e) => HttpResponse::BadRequest().json(map_validation_error(e)),
+            BlogError::NotFound(msg) => HttpResponse::NotFound().json(map_string_error(msg)),
+            BlogError::System(msg) => {
+                HttpResponse::InternalServerError().json(map_string_error(msg))
+            }
+        },
     }
 }
 

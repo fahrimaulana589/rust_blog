@@ -57,7 +57,7 @@ pub struct NewBlog {
     pub content: String,
     pub category_id: i32,
     pub slug: String,
-    pub excerpt: Option<String>,
+    pub excerpt: String,
     pub thumbnail: Option<String>,
     pub status: String,
     pub published_at: Option<NaiveDateTime>,

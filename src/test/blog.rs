@@ -51,9 +51,9 @@ async fn test_create_blog() {
         content: "Content".to_string(),
         category_id: 1,
         tag_ids: Some(vec![1]),
-        excerpt: None,
+        excerpt: "Excerpt".to_string(),
         thumbnail: None,
-        status: None,
+        status: "DRAFT".to_string(),
     };
 
     let req = test::TestRequest::post()
@@ -107,9 +107,9 @@ async fn test_get_blogs() {
         content: "Content".to_string(),
         category_id: cat_id,
         tag_ids: None,
-        excerpt: None,
+        excerpt: "Excerpt".to_string(),
         thumbnail: None,
-        status: None,
+        status: "DRAFT".to_string(),
     };
     let req = test::TestRequest::post()
         .uri("/app/blogs")
@@ -167,9 +167,9 @@ async fn test_get_blog_by_id() {
         content: "Content".to_string(),
         category_id: cat_id,
         tag_ids: None,
-        excerpt: None,
+        excerpt: "Excerpt".to_string(),
         thumbnail: None,
-        status: None,
+        status: "DRAFT".to_string(),
     };
     let req = test::TestRequest::post()
         .uri("/app/blogs")
@@ -240,9 +240,9 @@ async fn test_update_blog() {
         content: "Content".to_string(),
         category_id: cat_id,
         tag_ids: None,
-        excerpt: None,
+        excerpt: "Excerpt".to_string(),
         thumbnail: None,
-        status: None,
+        status: "DRAFT".to_string(),
     };
     let req = test::TestRequest::post()
         .uri("/app/blogs")
@@ -269,14 +269,15 @@ async fn test_update_blog() {
         .unwrap();
 
     // Update
+    let update_title = format!("Updated Title {}", Utc::now().timestamp_micros());
     let update_dto = UpdateBlogRequestDto {
-        title: Some("Updated Title".to_string()),
-        content: Some("Updated Content".to_string()),
-        category_id: Some(cat_id),
+        title: update_title.clone(),
+        content: "Updated Content".to_string(),
+        category_id: cat_id,
         tag_ids: None,
-        excerpt: None,
+        excerpt: "Updated Excerpt".to_string(),
         thumbnail: None,
-        status: None,
+        status: "DRAFT".to_string(),
     };
     let req = test::TestRequest::put()
         .uri(&format!("/app/blogs/{}", blog.id))
@@ -292,7 +293,7 @@ async fn test_update_blog() {
         .insert_header(("Authorization", format!("Bearer {}", token)))
         .to_request();
     let resp: SuccessResponse<BlogResponseDto> = test::call_and_read_body_json(&app, req).await;
-    assert_eq!(resp.data.unwrap().title, "Updated Title");
+    assert_eq!(resp.data.unwrap().title, update_title);
 }
 
 #[actix_web::test]
@@ -331,9 +332,9 @@ async fn test_delete_blog() {
         content: "Content".to_string(),
         category_id: cat_id,
         tag_ids: None,
-        excerpt: None,
+        excerpt: "Excerpt".to_string(),
         thumbnail: None,
-        status: None,
+        status: "DRAFT".to_string(),
     };
     let req = test::TestRequest::post()
         .uri("/app/blogs")
@@ -404,9 +405,9 @@ async fn test_partial_update_blog() {
         content: "Original Content".to_string(),
         category_id: cat_id,
         tag_ids: None,
-        excerpt: None,
+        excerpt: "Excerpt".to_string(),
         thumbnail: None,
-        status: None,
+        status: "DRAFT".to_string(),
     };
     let req = test::TestRequest::post()
         .uri("/app/blogs")
@@ -432,15 +433,15 @@ async fn test_partial_update_blog() {
         .unwrap();
 
     // Partial Update: Change Title only
-    let update_title = "Partially Updated Title".to_string();
+    let update_title = format!("Partially Updated Title {}", Utc::now().timestamp_micros());
     let update_dto = UpdateBlogRequestDto {
-        title: Some(update_title.clone()),
-        content: None,     // Should preserve "Original Content"
-        category_id: None, // Should preserve cat_id
+        title: update_title.clone(),
+        content: "Original Content".to_string(),
+        category_id: cat_id,
         tag_ids: None,
-        excerpt: None,
+        excerpt: "Excerpt".to_string(),
         thumbnail: None,
-        status: None,
+        status: "DRAFT".to_string(),
     };
     let req = test::TestRequest::put()
         .uri(&format!("/app/blogs/{}", blog.id))
@@ -471,13 +472,13 @@ async fn test_update_blog_empty_title_validation() {
 
     // Attempt Update with empty title
     let update_dto = UpdateBlogRequestDto {
-        title: Some("".to_string()), // Empty string
-        content: None,
-        category_id: None,
+        title: "".to_string(), // Empty string
+        content: "Content".to_string(),
+        category_id: 1,
         tag_ids: None,
-        excerpt: None,
+        excerpt: "Excerpt".to_string(),
         thumbnail: None,
-        status: None,
+        status: "DRAFT".to_string(),
     };
     let req = test::TestRequest::put()
         .uri("/app/blogs/123") // ID doesn't matter for DTO validation

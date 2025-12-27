@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
-use validator::Validate;
+use validator::{Validate, ValidationError};
 
 #[derive(Deserialize, Serialize, Validate, ToSchema)]
 pub struct CreateCategoryRequestDto {
@@ -48,24 +48,37 @@ pub struct CreateBlogRequestDto {
     pub title: String,
     #[validate(length(min = 1, message = "Content is required"))]
     pub content: String,
+    #[validate(range(min = 1, message = "Category ID is required"))]
     pub category_id: i32,
     pub tag_ids: Option<Vec<i32>>,
-    pub excerpt: Option<String>,
+    #[validate(length(min = 1, message = "Excerpt is required"))]
+    pub excerpt: String,
     pub thumbnail: Option<String>,
-    pub status: Option<String>, // "DRAFT" or "PUBLISHED"
+    #[validate(length(min = 1, message = "Status is required"),custom(function = "validate_status"))]
+    pub status: String, // "DRAFT" or "PUBLISHED"
 }
 
 #[derive(Deserialize, Serialize, Validate, ToSchema)]
 pub struct UpdateBlogRequestDto {
     #[validate(length(min = 1, message = "Title is required"))]
-    pub title: Option<String>,
+    pub title: String,
     #[validate(length(min = 1, message = "Content is required"))]
-    pub content: Option<String>,
-    pub category_id: Option<i32>,
+    pub content: String,
+    #[validate(range(min = 1, message = "Category ID is required"))]
+    pub category_id: i32,
     pub tag_ids: Option<Vec<i32>>,
-    pub excerpt: Option<String>,
+    #[validate(length(min = 1, message = "Excerpt is required"))]
+    pub excerpt: String,
     pub thumbnail: Option<String>,
-    pub status: Option<String>,
+    #[validate(length(min = 1, message = "Status is required"),custom(function = "validate_status"))]
+    pub status: String,
+}
+
+fn validate_status(status: &str) -> Result<(), ValidationError> {
+    if status != "DRAFT" && status != "PUBLISHED" {
+        return Err(ValidationError::new("Invalid status"));
+    }
+    Ok(())
 }
 
 #[derive(Deserialize, Serialize, ToSchema)]
