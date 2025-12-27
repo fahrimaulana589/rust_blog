@@ -64,7 +64,7 @@ pub struct UpdateProjectRequestDto {
 
 fn validate_status(status: &str) -> Result<(), validator::ValidationError> {
     match status {
-        "draft" | "ongoing" | "completed" => Ok(()),
+        "DRAFT" | "ONGOING" | "COMPLETED" => Ok(()),
         _ => Err(validator::ValidationError::new("Invalid status")),
     }
 }

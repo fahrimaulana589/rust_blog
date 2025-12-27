@@ -75,10 +75,10 @@ pub struct UpdateBlogRequestDto {
 }
 
 fn validate_status(status: &str) -> Result<(), ValidationError> {
-    if status != "DRAFT" && status != "PUBLISHED" {
-        return Err(ValidationError::new("Invalid status"));
+    match status {
+        "DRAFT" | "PUBLISHED" | "ARCHIVED" => Ok(()),
+        _ => Err(validator::ValidationError::new("Invalid status")),
     }
-    Ok(())
 }
 
 #[derive(Deserialize, Serialize, ToSchema)]
