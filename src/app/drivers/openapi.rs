@@ -31,12 +31,14 @@ use utoipa::{
         crate::app::features::blog::interface::controller::create_blog,
         crate::app::features::blog::interface::controller::get_blogs,
         crate::app::features::blog::interface::controller::get_blog,
+        crate::app::features::blog::interface::controller::get_blog_by_slug,
         crate::app::features::blog::interface::controller::update_blog,
         crate::app::features::blog::interface::controller::delete_blog,
         // Projects
         crate::app::features::projects::interface::controller::create_project,
         crate::app::features::projects::interface::controller::get_all_projects,
         crate::app::features::projects::interface::controller::get_project,
+        crate::app::features::projects::interface::controller::get_project_by_slug,
         crate::app::features::projects::interface::controller::update_project,
         crate::app::features::projects::interface::controller::delete_project,
         // Stacks
@@ -49,6 +51,7 @@ use utoipa::{
         crate::app::features::portofolio::interface::controller::create_portfolio,
         crate::app::features::portofolio::interface::controller::get_all_portfolios,
         crate::app::features::portofolio::interface::controller::get_portfolio,
+        crate::app::features::portofolio::interface::controller::get_portfolio_by_slug,
         crate::app::features::portofolio::interface::controller::update_portfolio,
         crate::app::features::portofolio::interface::controller::delete_portfolio,
         // Profile

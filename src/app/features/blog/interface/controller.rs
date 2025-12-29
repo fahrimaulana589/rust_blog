@@ -419,6 +419,45 @@ pub async fn get_blog(container: web::Data<Container>, id: web::Path<i32>) -> im
         }
     }
 }
+#[utoipa::path(
+    path = "/app/blogs/slug/{slug}",
+    tag = "Blog",
+    params(
+        ("slug", description = "Blog Slug")
+    ),
+    responses(
+        (status = 200, description = "Blog found", body = crate::utils::success_response::SuccessResponse<BlogResponseDto>),
+        (status = 404, description = "Blog not found", body = ErrorResponse),
+        (status = 500, description = "Internal server error")
+    )
+)]
+#[get("/blogs/slug/{slug}")]
+pub async fn get_blog_by_slug(
+    container: web::Data<Container>,
+    slug: web::Path<String>,
+) -> impl Responder {
+    match container
+        .get_blog_by_slug_usecase
+        .execute(slug.into_inner())
+    {
+        Ok(blog) => HttpResponse::Ok().json(map_success_with_data(
+            "Blog fetched successfully".to_string(),
+            blog,
+        )),
+        Err(e) => {
+            use crate::app::features::blog::domain::error::BlogError;
+            match e {
+                BlogError::Validation(e) => {
+                    HttpResponse::BadRequest().json(map_validation_error(e))
+                }
+                BlogError::NotFound(msg) => HttpResponse::NotFound().json(map_string_error(msg)),
+                BlogError::System(msg) => {
+                    HttpResponse::InternalServerError().json(map_string_error(msg))
+                }
+            }
+        }
+    }
+}
 
 #[utoipa::path(
     path = "/app/blogs/{id}",

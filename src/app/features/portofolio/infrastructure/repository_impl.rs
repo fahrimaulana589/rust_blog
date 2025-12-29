@@ -126,12 +126,22 @@ impl PortofolioRepository for PortofolioRepositoryImpl {
         diesel::delete(portofolios::table.find(id)).execute(&mut conn)
     }
 
-    fn find_by_slug(&self, slug: String) -> QueryResult<Option<Portofolio>> {
+    fn find_by_slug(&self, slug: String) -> QueryResult<Option<(Portofolio, Project, Vec<Stack>)>> {
         let mut conn = self.pool.get().expect("Failed to get db connection");
 
-        portofolios::table
+        let result: Option<(Portofolio, Project)> = portofolios::table
             .filter(portofolios::slug.eq(slug))
+            .inner_join(projects::table)
+            .select((Portofolio::as_select(), Project::as_select()))
             .first(&mut conn)
-            .optional()
+            .optional()?;
+
+        match result {
+            Some((portfolio, project)) => {
+                let stacks = self.get_stacks_for_project(&mut conn, project.id)?;
+                Ok(Some((portfolio, project, stacks)))
+            }
+            None => Ok(None),
+        }
     }
 }

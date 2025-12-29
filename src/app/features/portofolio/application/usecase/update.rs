@@ -43,7 +43,7 @@ impl Execute {
             .filter(|c| c.is_alphanumeric() || *c == '-')
             .collect::<String>();
 
-        if let Some(existing_portfolio) = self
+        if let Some((existing_portfolio, _, _)) = self
             .repository
             .find_by_slug(slug.clone())
             .map_err(|e| PortofolioError::System(e.to_string()))?

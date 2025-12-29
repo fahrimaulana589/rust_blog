@@ -1,8 +1,10 @@
 pub mod auth;
 pub mod blog;
+pub mod blog_slug;
 pub mod category;
 pub mod helpers;
 pub mod portofolio;
+pub mod portofolio_slug;
 pub mod profile;
 pub mod projects;
 pub mod tag;

@@ -104,6 +104,42 @@ pub async fn get_portfolio(data: web::Data<Container>, id: web::Path<i32>) -> im
         },
     }
 }
+#[utoipa::path(
+    path = "/app/portofolios/slug/{slug}",
+    tag = "Portofolios",
+    params(
+        ("slug", description = "Portofolio Slug")
+    ),
+    responses(
+        (status = 200, description = "Portofolio found", body = crate::utils::success_response::SuccessResponse<PortofolioResponseDto>),
+        (status = 404, description = "Portofolio not found", body = ErrorResponse),
+        (status = 500, description = "Internal server error")
+    )
+)]
+#[get("/portofolios/slug/{slug}")]
+pub async fn get_portfolio_by_slug(
+    data: web::Data<Container>,
+    slug: web::Path<String>,
+) -> impl Responder {
+    use crate::app::features::portofolio::domain::error::PortofolioError;
+    match data
+        .portofolio_get_by_slug_usecase
+        .execute(slug.into_inner())
+    {
+        Ok(res) => {
+            HttpResponse::Ok().json(map_success_with_data("Portofolio found".to_string(), res))
+        }
+        Err(e) => match e {
+            PortofolioError::Validation(e) => {
+                HttpResponse::BadRequest().json(map_validation_error(e))
+            }
+            PortofolioError::NotFound(msg) => HttpResponse::NotFound().json(map_string_error(msg)),
+            PortofolioError::System(msg) => {
+                HttpResponse::InternalServerError().json(map_string_error(msg))
+            }
+        },
+    }
+}
 
 #[utoipa::path(
     path = "/app/portofolios/{id}",

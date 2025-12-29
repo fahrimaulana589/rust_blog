@@ -47,11 +47,13 @@ pub struct Container {
     pub create_blog_usecase: blog_usecase::create::Execute,
     pub get_blogs_usecase: blog_usecase::get_all::Execute,
     pub get_blog_usecase: blog_usecase::get::Execute,
+    pub get_blog_by_slug_usecase: blog_usecase::get_by_slug::Execute,
     pub update_blog_usecase: blog_usecase::update::Execute,
     pub delete_blog_usecase: blog_usecase::delete::Execute,
     pub create_project_usecase: project_usecase::create::Execute,
     pub get_all_projects_usecase: project_usecase::get_all::Execute,
     pub get_project_usecase: project_usecase::get::Execute,
+    pub get_project_by_slug_usecase: project_usecase::get_by_slug::Execute,
     pub update_project_usecase: project_usecase::update::Execute,
     pub delete_project_usecase: project_usecase::delete::Execute,
     pub create_stack_usecase: stack_usecase::create::Execute,
@@ -62,6 +64,7 @@ pub struct Container {
     pub portofolio_create_usecase: portofolio_usecase::create::Execute,
     pub portofolio_get_all_usecase: portofolio_usecase::get_all::Execute,
     pub portofolio_get_usecase: portofolio_usecase::get::Execute,
+    pub portofolio_get_by_slug_usecase: portofolio_usecase::get_by_slug::Execute,
     pub portofolio_update_usecase: portofolio_usecase::update::Execute,
     pub portofolio_delete_usecase: portofolio_usecase::delete::Execute,
     pub get_profile_usecase: profile_usecase::get::Execute,
@@ -112,6 +115,8 @@ impl Container {
         let create_blog_usecase = blog_usecase::create::Execute::new(blog_repository.clone());
         let get_blogs_usecase = blog_usecase::get_all::Execute::new(blog_repository.clone());
         let get_blog_usecase = blog_usecase::get::Execute::new(blog_repository.clone());
+        let get_blog_by_slug_usecase =
+            blog_usecase::get_by_slug::Execute::new(blog_repository.clone());
         let update_blog_usecase = blog_usecase::update::Execute::new(blog_repository.clone());
         let delete_blog_usecase = blog_usecase::delete::Execute::new(blog_repository.clone());
 
@@ -123,6 +128,8 @@ impl Container {
         let get_all_projects_usecase =
             project_usecase::get_all::Execute::new(project_repository.clone());
         let get_project_usecase = project_usecase::get::Execute::new(project_repository.clone());
+        let get_project_by_slug_usecase =
+            project_usecase::get_by_slug::Execute::new(project_repository.clone());
         let update_project_usecase =
             project_usecase::update::Execute::new(project_repository.clone());
         let delete_project_usecase =
@@ -144,6 +151,8 @@ impl Container {
             portofolio_usecase::get_all::Execute::new(portofolio_repository.clone());
         let portofolio_get_usecase =
             portofolio_usecase::get::Execute::new(portofolio_repository.clone());
+        let portofolio_get_by_slug_usecase =
+            portofolio_usecase::get_by_slug::Execute::new(portofolio_repository.clone());
         let portofolio_update_usecase =
             portofolio_usecase::update::Execute::new(portofolio_repository.clone());
         let portofolio_delete_usecase =
@@ -175,11 +184,13 @@ impl Container {
             create_blog_usecase,
             get_blogs_usecase,
             get_blog_usecase,
+            get_blog_by_slug_usecase,
             update_blog_usecase,
             delete_blog_usecase,
             create_project_usecase,
             get_all_projects_usecase,
             get_project_usecase,
+            get_project_by_slug_usecase,
             update_project_usecase,
             delete_project_usecase,
             create_stack_usecase,
@@ -190,6 +201,7 @@ impl Container {
             portofolio_create_usecase,
             portofolio_get_all_usecase,
             portofolio_get_usecase,
+            portofolio_get_by_slug_usecase,
             portofolio_update_usecase,
             portofolio_delete_usecase,
             get_profile_usecase,

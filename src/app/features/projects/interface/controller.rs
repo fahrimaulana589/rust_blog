@@ -107,6 +107,43 @@ pub async fn get_project(data: web::Data<Container>, path: web::Path<i32>) -> im
 }
 
 #[utoipa::path(
+    path = "/app/projects/slug/{slug}",
+    tag = "Projects",
+    params(
+        ("slug", description = "Project Slug")
+    ),
+    responses(
+        (status = 200, description = "Project found", body = crate::utils::success_response::SuccessResponse<ProjectResponseDto>),
+        (status = 404, description = "Project not found", body = ErrorResponse),
+        (status = 500, description = "Internal server error")
+    )
+)]
+#[get("/projects/slug/{slug}")]
+pub async fn get_project_by_slug(
+    data: web::Data<Container>,
+    path: web::Path<String>,
+) -> impl Responder {
+    let slug = path.into_inner();
+    match data.get_project_by_slug_usecase.execute(slug) {
+        Ok(res) => HttpResponse::Ok().json(SuccessResponse::new(
+            "Project retrieved successfully".to_string(),
+            Some(res),
+        )),
+        Err(e) => {
+            // The usecase currently returns String error, need to map it.
+            // Wait, existing usecases (get) return Result<ProjectResponseDto, String>.
+            // So 'e' is String.
+            if e.to_lowercase().contains("not found") {
+                HttpResponse::NotFound().json(crate::utils::error_response::map_string_error(e))
+            } else {
+                HttpResponse::InternalServerError()
+                    .json(crate::utils::error_response::map_string_error(e))
+            }
+        }
+    }
+}
+
+#[utoipa::path(
     put,
     path = "/app/projects/{id}",
     tag = "Projects",
