@@ -7,4 +7,5 @@ pub mod portofolio;
 pub mod portofolio_slug;
 pub mod profile;
 pub mod projects;
+pub mod public_access;
 pub mod tag;

@@ -263,6 +263,9 @@ Semua endpoint blog ada di bawah `/app`.
 - GET /app/blogs/{id}
   - Success: blog object (see example above)
 
+- GET /app/blogs/slug/{slug}
+  - Success: blog object (same as get by id)
+
 - PUT /app/blogs/{id}
   - Request: same fields as create but all optional
 
@@ -312,6 +315,7 @@ Headers: `Authorization: Bearer <token>`
 ```
 
 - GET /app/projects/{id}
+- GET /app/projects/slug/{slug}
 - PUT /app/projects/{id}
   - Request: partial fields allowed (see create example)
 - DELETE /app/projects/{id}
@@ -356,6 +360,7 @@ Headers: `Authorization: Bearer <token>`
 ```
 
 - GET /app/portfolios/{id}
+- GET /app/portfolios/slug/{slug}
 - PUT /app/portfolios/{id}
   - Request example: same fields as create (all optional for update)
 - DELETE /app/portfolios/{id}
