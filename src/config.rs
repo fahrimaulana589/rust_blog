@@ -5,6 +5,7 @@ use std::env;
 pub struct Config {
     pub url: String,
     pub database_url: String,
+    pub allowed_origins: Vec<String>,
     pub jwt_secret: String,
     pub default_username: String,
     pub default_email: String,
@@ -22,6 +23,7 @@ impl Config {
         Config {
             url: env::var("URL").unwrap(),
             database_url: env::var("DATABASE_URL").unwrap(),
+            allowed_origins: env::var("ALLOWED_ORIGINS").unwrap().split(",").map(|s| s.to_string()).collect(),
             jwt_secret: env::var("JWT_SECRET").expect("JWT_SECRET must be set"),
             default_username: env::var("DEFAULT_USERNAME").expect("DEFAULT_USERNAME must be set"),
             default_email: env::var("DEFAULT_EMAIL").expect("DEFAULT_EMAIL must be set"),
